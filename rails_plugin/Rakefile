@@ -1,0 +1,16 @@
+require 'rake/testtask'
+require 'rake/rdoctask'
+
+include FileUtils
+
+desc "run all unit tests"
+task :test do  
+  Rake::TestTask.new do |t|
+    rm_rf('tmp')
+    t.test_files = FileList['tests/unit/**/*_test.rb']
+    t.verbose = true
+  end
+end
+
+desc "default task"
+task :default => [:test]
