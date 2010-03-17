@@ -153,7 +153,7 @@ class TestRepositoryFactory
     end
 
     def git_init
-      sh "cd #{dir} && git init > /dev/null 2>&1 "
+      sh "cd #{dir} && /opt/local/bin/git init > /dev/null 2>&1 "
     end
 
     def extract_bundle(zip_file)

@@ -11,7 +11,7 @@ unless RUBY_PLATFORM =~ /java/
     end
   
     def repository_empty?
-      command = "cd #{@clone_path} && git log -1"
+      command = "cd #{@clone_path} && /opt/local/bin/git log -1"
       result = ""
       Open3.popen3(command) do |stdin, stdout, stderr|
         begin
@@ -24,13 +24,13 @@ unless RUBY_PLATFORM =~ /java/
     end
     
     def log_for_rev(rev)
-      log_for_revs("#{rev}^1", rev).first
+      log_for_revs(rev, rev).first
     end
         
     def log_for_revs(from, to)
-      raise 'Repository is empty!' if repository_empty?
+      raise "Repository is empty!" if repository_empty?
       
-      command = "cd #{@clone_path} && git log #{from} #{to}"
+      command = "cd #{@clone_path} && /opt/local/bin/git log #{from} #{to}"
       result = []
 
       error = ''
@@ -54,7 +54,7 @@ unless RUBY_PLATFORM =~ /java/
         end
       end
 
-      raise StandardError.new(error) unless error.empty?
+      raise StandardError.new("Could not execute '#{command}'. The error was:\n#{error}" ) unless error.empty?
       
       result
     end
