@@ -75,13 +75,13 @@ class GitRepository
   end
 
   #
-  #   #:nodoc:
-  #   def git_patch_for(changeset, truncation_threshold = PER_FILE_PATCH_TRUNCATION_THRESHOLD)
-  #     git_patch = GitGitPatch.new(changeset.identifier, self, truncation_threshold)
-  #     @git_client.git_patch_for(changeset.identifier, git_patch)
-  #     git_patch
-  #   end
-  #   
+  #:nodoc:
+  def git_patch_for(changeset, truncation_threshold = PER_FILE_PATCH_TRUNCATION_THRESHOLD)
+    git_patch = GitPatch.new(changeset.commit_id, self, truncation_threshold)
+    @git_client.git_patch_for(changeset.commit_id, git_patch)
+    git_patch
+  end
+  #
   #   #:nodoc:
   #   def files_in(changeset_identifier)
   #     @git_client.files_in(changeset_identifier)
