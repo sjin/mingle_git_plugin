@@ -1,3 +1,20 @@
+module RandomString
+  def size_32
+    md5 = Digest::MD5::new
+    now = Time.now
+    md5.update(now.to_s)
+    md5.update(now.usec.to_s)
+    md5.hexdigest
+  end
+  module_function :size_32
+end
+
+class NoOpMingleRevisionRepository
+  def sew_in_most_recent_changeset_data_from_mingle(children)
+  end
+end
+
+
 # Stub Mingle's NoSuchRevisionError, which must be thrown by the plugin
 # in a couple of places in order for Mingle to work correctly.  
 #

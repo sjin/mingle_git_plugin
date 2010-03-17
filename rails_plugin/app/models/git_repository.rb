@@ -1,5 +1,5 @@
 class GitRepository
-  
+
   PER_FILE_PATCH_TRUNCATION_THRESHOLD = 1001
 
   def initialize(git_client, source_browser)
@@ -44,8 +44,8 @@ class GitRepository
 
   # *returns* the GitFileNode or GitDirNode for _path_ for consumption by the source browser pages
   # todo: need to co-ordinate with Mingle guys to remove dependency on Repository::NoSuchRevisionError
-  def node(path, changeset_identifier = 'tip')
-    changeset_identifier = 'tip' if ['tip', 'head'].any?{|tip_id| tip_id == changeset_identifier.to_s.downcase}
+  def node(path, changeset_identifier = 'head')
+    changeset_identifier = changeset_identifier.to_s.downcase
 
     begin
       proper_changeset = changeset(changeset_identifier)
@@ -58,10 +58,10 @@ class GitRepository
     end
 
     begin
-      if changeset_identifier == 'tip'
-        @source_browser.tip_node(path, proper_changeset.number, proper_changeset.identifier)
+      if changeset_identifier == 'head'
+        @source_browser.head_node(path, proper_changeset.commit_id)
       else
-        @source_browser.node(path, proper_changeset.number, proper_changeset.identifier)
+        @source_browser.node(path, proper_changeset.commit_id)
       end
     rescue StandardError => e
       ActiveRecord::Base.logger.warn(%{
@@ -70,7 +70,7 @@ class GitRepository
            Otherwise, the changeset is likely still being cached by Mingle.
            This is quite likely in the case of the initial caching of a large Git repository.
          })
-      raise Repository::NoSuchRevisionError.new
+      raise Repository::NoSuchRevisionError.new(e)
     end
   end
 

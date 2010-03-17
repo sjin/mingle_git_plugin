@@ -114,55 +114,58 @@ class GitRepositoryTest < Test::Unit::TestCase
   end
 
 
-#  def test_node_throws_correct_error_on_bogus_revision
-#    repository = TestRepositoryFactory.create_repository_without_source_browser('hello')
-#    begin
-#      repository.node('', 300)
-#      fail "Exception was not raised due to bogus revision"
-#    rescue Repository::NoSuchRevisionError
-#      return
-#    end
-#  end
-#
-#
-#  # todo: introduce mocks, remove dependency on actual source browser(s)
-#  def test_node_for_head_and_tip_in_all_casings_will_return_tip_changeset
-#    repository, source_browser = TestRepositoryFactory.create_repository_with_source_browser('one_add')
-#    source_browser.ensure_file_cache_synched_for(0)
-#    source_browser.ensure_file_cache_synched_for(1)
-#
-#    ['tip', 'TIP', 'head', 'HEAD'].each do |changeset|
-#      assert_equal 1, repository.node('', changeset).changeset_number
-#    end
-#  end
-  
-  # 
-  # # todo: introduce mocks, remove dependency on actual source browser(s)
-  # def test_node_uses_source_browser_tip_node_method_when_tip_is_requested
-  #   repository, source_browser = TestRepositoryFactory.create_repository_with_source_browser('one_add')
-  #   source_browser.ensure_file_cache_synched_for(0)
-  #   source_browser.ensure_file_cache_synched_for(1)
-  # 
-  #   def source_browser.tip_node(path, likely_tip_number, likely_tip_identifier)
-  #     @calling_node_now_ok = true
-  #     super
-  #   end
-  #   def source_browser.node(path, number, identifier)
-  #     raise "sorry, wrong method was used." unless @calling_node_now_ok
-  #     super
-  #   end
-  #   assert_equal 1, repository.node('', 'tip').changeset_number
-  # end
-  # 
+  def test_node_throws_correct_error_on_bogus_revision
+    repository = TestRepositoryFactory.create_repository_without_source_browser('hello')
+    begin
+      repository.node('', 300)
+      fail "Exception was not raised due to bogus revision"
+    rescue Repository::NoSuchRevisionError
+      return
+    end
+  end
+
+
+  # todo: introduce mocks, remove dependency on actual source browser(s)
+  def test_node_for_head_and_tip_in_all_casings_will_return_tip_changeset
+    repository, source_browser = TestRepositoryFactory.create_repository_with_source_browser('one_add')
+    source_browser.ensure_file_cache_synched_for('0e2388def75b167b2baec22cf8ad3b3162aa13ad')
+    source_browser.ensure_file_cache_synched_for('63589c09db884b294626e95f9063027babe93f62')
+
+    ['MASTER', 'master', 'head', 'HEAD'].each do |changeset|
+      assert_equal '63589c09db884b294626e95f9063027babe93f62', repository.node('', changeset).commit_id
+    end
+  end
+
+
+  # todo: introduce mocks, remove dependency on actual source browser(s)
+  def test_node_uses_source_browser_tip_node_method_when_tip_is_requested
+    repository, source_browser = TestRepositoryFactory.create_repository_with_source_browser('one_add')
+    source_browser.ensure_file_cache_synched_for('0e2388def75b167b2baec22cf8ad3b3162aa13ad')
+    source_browser.ensure_file_cache_synched_for('63589c09db884b294626e95f9063027babe93f62')
+
+    def source_browser.tip_node(path, commit_id)
+      @calling_node_now_ok = true
+      super
+    end
+
+    def source_browser.node(path, commit_id)
+      raise "sorry, wrong method was used." unless @calling_node_now_ok
+      super
+    end
+
+    assert_equal '63589c09db884b294626e95f9063027babe93f62', repository.node('', 'head').commit_id
+  end
+
+  #
   # # todo: introduce mocks, remove dependency on actual source browser
-  # def test_node_throws_no_such_revision_error_when_uncached_changeset_requested
-  #   repository, source_browser = TestRepositoryFactory.create_repository_with_source_browser('one_add')
-  #   begin
-  #     repository.node('', 1)
-  #     fail("NoSuchRevisionError was not thrown!")
-  #   rescue Repository::NoSuchRevisionError
-  #     # this is good
-  #   end
-  # end
+  def test_node_throws_no_such_revision_error_when_uncached_changeset_requested
+    repository, source_browser = TestRepositoryFactory.create_repository_with_source_browser('one_add')
+    begin
+      repository.node('', 1)
+      fail("NoSuchRevisionError was not thrown!")
+    rescue Repository::NoSuchRevisionError
+      # this is good
+    end
+  end
 
 end
