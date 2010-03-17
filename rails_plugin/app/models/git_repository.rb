@@ -26,16 +26,17 @@ class GitRepository
   def next_changesets(skip_up_to, limit)
     return [] if empty?    
     head = @git_client.log_for_rev('head')
-    return [] if skip_up_to && skip_up_to.commit_id == head[:commit_id]
+    return [] if skip_up_to && skip_up_to == head[:commit_id]
     
     from = 'head' if skip_up_to.nil?
     to = '' if skip_up_to.nil?
 
     puts "getting revisions from: #{from}..#{to}"
     
-    log_entries = @git_client.log_for_revs(from, to)
-    log_entries.reverse[0..limit]
-    log_entries.map{|log_entry| construct_changeset(log_entry)}
+    start_index = 0 if skip_up_to.nil?
+    start_index = 1 unless skip_up_to.nil?
+    log_entries = @git_client.log_for_revs(from, to).reverse
+    log_entries[start_index, limit].map{|log_entry| construct_changeset(log_entry)}
   end
   #   alias :next_revisions :next_changesets
   #   

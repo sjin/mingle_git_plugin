@@ -3,79 +3,80 @@ require File.expand_path File.join(File.dirname(__FILE__), '..', 'test_helper')
 class GitRepositoryTest < Test::Unit::TestCase
   
   def test_empty_returns_true_when_no_changesets_in_repos
-    repository = TestRepositoryFactory.create_repository_without_source_browser(nil)
-    assert repository.empty?
-  end
-
-  def test_empty_returns_false_when_changesets_in_repos
+     repository = TestRepositoryFactory.create_repository_without_source_browser(nil)
+     assert repository.empty?
+   end
+  
+   def test_empty_returns_false_when_changesets_in_repos
+     repository = TestRepositoryFactory.create_repository_without_source_browser('hello')
+     assert !repository.empty?
+   end
+   
+   
+   def test_changeset_raises_error_when_repository_is_empty
+     repository = TestRepositoryFactory.create_repository_without_source_browser(nil)
+     begin
+       changeset = repository.changeset('bogus')
+       fail "should have failed"
+     rescue StandardError => e
+        assert_equal "Repository is empty!", e.message
+     end
+   end
+   
+   def test_changeset_raises_error_when_changeset_does_not_exist
+     repository = TestRepositoryFactory.create_repository_without_source_browser('hello')
+     begin
+       changeset = repository.changeset('bogus')
+       changeset.path
+       fail "should have failed"
+     rescue StandardError => e
+       e.message.index("'bogus' is not a commit")
+     end
+   end
+   
+   def test_changeset_returns_changeset_when_it_exists
+     repository = TestRepositoryFactory.create_repository_without_source_browser('hello')
+     changeset = repository.changeset('cd96e8911a62a9ab9c2c3d1596b10dd01f62bb4c')
+     assert_equal 'cd96e8911a62a9ab9c2c3d1596b10dd01f62bb4c', changeset.commit_id
+     assert_equal "Ketan Padegaonkar <KetanPadegaonkar@gmail.com>", changeset.author
+     assert_equal "added another hello world", changeset.description
+     assert_equal 'Wed Mar 17 03:32:14 UTC 2010', changeset.time.utc.to_s
+   end
+  
+   def test_next_changesets_returns_empty_array_when_repository_empty
+     repository = TestRepositoryFactory.create_repository_without_source_browser(nil)
+     assert_equal [], repository.next_changesets(nil, 100)
+   end
+   
+   def test_next_changesets_returns_all_changesets_when_repos_contains_fewer_changesets_than_limit
+     repository = TestRepositoryFactory.create_repository_without_source_browser('hello')
+     changesets = repository.next_changesets(nil, 100)
+     assert_equal 5, changesets.size
+   
+     sample_changeset = changesets[2]
+     assert_equal 'f4ffd95af49c7e722732ea8eb716c23b16ce7762', sample_changeset.commit_id
+     assert_equal "Ketan Padegaonkar <KetanPadegaonkar@gmail.com>", sample_changeset.author
+     assert_equal "added another hello world", sample_changeset.description
+     assert_equal 'Wed Mar 17 03:32:19 UTC 2010', sample_changeset.time.utc.to_s
+   end
+  
+  def test_next_changesets_returns_changesets_from_zero_up_to_limit_when_repos_has_more_changesets_than_limit
     repository = TestRepositoryFactory.create_repository_without_source_browser('hello')
-    assert !repository.empty?
+    changesets = repository.next_changesets(nil, 2)
+    assert_equal 2, changesets.size
+    assert_equal 'ca1ec263c4dfe2b592436a1c894288fe552c8348', changesets[0].commit_id
+    assert_equal 'cd96e8911a62a9ab9c2c3d1596b10dd01f62bb4c', changesets[1].commit_id
   end
   
-  
-  def test_changeset_raises_error_when_repository_is_empty
-    repository = TestRepositoryFactory.create_repository_without_source_browser(nil)
-    begin
-      changeset = repository.changeset('bogus')
-      fail "should have failed"
-    rescue StandardError => e
-       assert_equal "Repository is empty!", e.message
-    end
-  end
-  
-  def test_changeset_raises_error_when_changeset_does_not_exist
+  def test_next_changesets_returns_changesets_from_start_up_to_limit_when_repos_has_more_changesets_than_limit
     repository = TestRepositoryFactory.create_repository_without_source_browser('hello')
-    begin
-      changeset = repository.changeset('bogus')
-      changeset.path
-      fail "should have failed"
-    rescue StandardError => e
-      e.message.index("'bogus' is not a commit")
-    end
+    first_commit = 'ca1ec263c4dfe2b592436a1c894288fe552c8348'
+    changesets = repository.next_changesets(first_commit, 2)
+    assert_equal 2, changesets.size
+    assert_equal 'cd96e8911a62a9ab9c2c3d1596b10dd01f62bb4c', changesets[0].commit_id
+    assert_equal 'f4ffd95af49c7e722732ea8eb716c23b16ce7762', changesets[1].commit_id
   end
   
-  def test_changeset_returns_changeset_when_it_exists
-    repository = TestRepositoryFactory.create_repository_without_source_browser('hello')
-    changeset = repository.changeset('cd96e8911a62a9ab9c2c3d1596b10dd01f62bb4c')
-    assert_equal 'cd96e8911a62a9ab9c2c3d1596b10dd01f62bb4c', changeset.commit_id
-    assert_equal "Ketan Padegaonkar <KetanPadegaonkar@gmail.com>", changeset.author
-    assert_equal "added another hello world", changeset.description
-    assert_equal 'Wed Mar 17 03:32:14 UTC 2010', changeset.time.utc.to_s
-  end
-
-  def test_next_changesets_returns_empty_array_when_repository_empty
-    repository = TestRepositoryFactory.create_repository_without_source_browser(nil)
-    assert_equal [], repository.next_changesets(nil, 100)
-  end
-  
-  def test_next_changesets_returns_all_changesets_when_repos_contains_fewer_changesets_than_limit
-    repository = TestRepositoryFactory.create_repository_without_source_browser('hello')
-    changesets = repository.next_changesets(nil, 100)
-    assert_equal 5, changesets.size
-  
-    sample_changeset = changesets[2]
-    assert_equal 'f4ffd95af49c7e722732ea8eb716c23b16ce7762', sample_changeset.commit_id
-    assert_equal "Ketan Padegaonkar <KetanPadegaonkar@gmail.com>", sample_changeset.author
-    assert_equal "added another hello world", sample_changeset.description
-    assert_equal 'Wed Mar 17 03:32:19 UTC 2010', sample_changeset.time.utc.to_s
-  end
-  # 
-  # def test_next_changesets_returns_changesets_from_zero_up_to_limit_when_repos_has_more_changesets_than_limit
-  #   repository = TestRepositoryFactory.create_repository_without_source_browser('hello')
-  #   changesets = repository.next_changesets(nil, 2)
-  #   assert_equal 2, changesets.size
-  #   assert_equal 0, changesets[0].number
-  #   assert_equal 1, changesets[1].number
-  # end
-  # 
-  # def test_next_changesets_returns_changesets_from_start_up_to_limit_when_repos_has_more_changesets_than_limit
-  #   repository = TestRepositoryFactory.create_repository_without_source_browser('hello')
-  #   youngest_in_project = OpenStruct.new(:number => 1)
-  #   changesets = repository.next_changesets(youngest_in_project, 2)
-  #   assert_equal 2, changesets.size
-  #   assert_equal 2, changesets[0].number
-  #   assert_equal 3, changesets[1].number
-  # end
   # 
   # def test_next_changesets_returns_empty_array_when_project_up_to_date_with_repository
   #   repository = TestRepositoryFactory.create_repository_without_source_browser('hello')
