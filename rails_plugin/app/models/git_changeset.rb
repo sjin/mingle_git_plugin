@@ -8,7 +8,6 @@ class GitChangeset
   
   def initialize(attributes, repository)
     @repository = repository
-    puts attributes[:time]
     attributes.each do |k, v|
       instance_variable_set("@#{k}", v)
     end

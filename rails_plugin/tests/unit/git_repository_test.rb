@@ -36,30 +36,29 @@ class GitRepositoryTest < Test::Unit::TestCase
   
   def test_changeset_returns_changeset_when_it_exists
     repository = TestRepositoryFactory.create_repository_without_source_browser('hello')
-    changeset = repository.changeset('2')
-    assert_equal 'ca1ec263c4dfe2b592436a1c894288fe552c8348', changeset.commit_id
+    changeset = repository.changeset('cd96e8911a62a9ab9c2c3d1596b10dd01f62bb4c')
+    assert_equal 'cd96e8911a62a9ab9c2c3d1596b10dd01f62bb4c', changeset.commit_id
     assert_equal "Ketan Padegaonkar <KetanPadegaonkar@gmail.com>", changeset.author
-    assert_equal "added a hello world", changeset.description
-    assert_equal 'Tue Mar 16 07:44:35 UTC 2010', changeset.time.utc.to_s
+    assert_equal "added another hello world", changeset.description
+    assert_equal 'Wed Mar 17 03:32:14 UTC 2010', changeset.time.utc.to_s
   end
 
   def test_next_changesets_returns_empty_array_when_repository_empty
     repository = TestRepositoryFactory.create_repository_without_source_browser(nil)
     assert_equal [], repository.next_changesets(nil, 100)
   end
-  # 
-  # def test_next_changesets_returns_all_changesets_when_repos_contains_fewer_changesets_than_limit
-  #   repository = TestRepositoryFactory.create_repository_without_source_browser('hello')
-  #   changesets = repository.next_changesets(nil, 100)
-  #   assert_equal 5, changesets.size
-  # 
-  #   sample_changeset = changesets[2]
-  #   assert_equal 'fef857204a0c58caefe249dda038316e856e896d', sample_changeset.changeset_identifier
-  #   assert_equal 2, sample_changeset.revision_number
-  #   assert_equal "Bryan O'Sullivan", sample_changeset.person
-  #   assert_equal "Introduce a typo into hello.c.", sample_changeset.desc
-  #   assert_equal 'Sat Aug 16 20:05:04 UTC 2008', sample_changeset.time.utc.to_s
-  # end
+  
+  def test_next_changesets_returns_all_changesets_when_repos_contains_fewer_changesets_than_limit
+    repository = TestRepositoryFactory.create_repository_without_source_browser('hello')
+    changesets = repository.next_changesets(nil, 100)
+    assert_equal 5, changesets.size
+  
+    sample_changeset = changesets[2]
+    assert_equal 'f4ffd95af49c7e722732ea8eb716c23b16ce7762', sample_changeset.commit_id
+    assert_equal "Ketan Padegaonkar <KetanPadegaonkar@gmail.com>", sample_changeset.author
+    assert_equal "added another hello world", sample_changeset.description
+    assert_equal 'Wed Mar 17 03:32:19 UTC 2010', sample_changeset.time.utc.to_s
+  end
   # 
   # def test_next_changesets_returns_changesets_from_zero_up_to_limit_when_repos_has_more_changesets_than_limit
   #   repository = TestRepositoryFactory.create_repository_without_source_browser('hello')

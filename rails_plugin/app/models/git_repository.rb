@@ -15,8 +15,8 @@ class GitRepository
   
   # *returns*: the GitChangeset identified by treeish.  will work for commit_id, 
   # short identifier, long identifier. raises error if changset does not exist.
-  def changeset(treeish)
-    construct_changeset(@git_client.log_for_rev(treeish))
+  def changeset(commit_id)
+    construct_changeset(@git_client.log_for_rev(commit_id))
   end
   alias :revision :changeset
 
@@ -25,12 +25,17 @@ class GitRepository
   # object from the Mingle model.
   def next_changesets(skip_up_to, limit)
     return [] if empty?    
-    tip_number, tip_identifier, the_rest = @git_client.log_for_rev('tip')
-    return [] if skip_up_to && skip_up_to.number.to_i == tip_number.to_i
-    from = skip_up_to.nil? ? 0 : skip_up_to.number + 1
-    to = [from + limit - 1, tip_number.to_i].min
+    head = @git_client.log_for_rev('head')
+    return [] if skip_up_to && skip_up_to.commit_id == head[:commit_id]
+    
+    from = 'head' if skip_up_to.nil?
+    to = '' if skip_up_to.nil?
+
+    puts "getting revisions from: #{from}..#{to}"
+    
     log_entries = @git_client.log_for_revs(from, to)
-    log_entries.map{|log_entry| construct_changeset(*log_entry)}
+    log_entries.reverse[0..limit]
+    log_entries.map{|log_entry| construct_changeset(log_entry)}
   end
   #   alias :next_revisions :next_changesets
   #   

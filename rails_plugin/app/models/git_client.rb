@@ -24,13 +24,13 @@ unless RUBY_PLATFORM =~ /java/
     end
     
     def log_for_rev(rev)
-      log_for_revs(rev, rev).first
+      log_for_revs("#{rev}^1", rev).first
     end
         
     def log_for_revs(from, to)
       raise 'Repository is empty!' if repository_empty?
       
-      command = "cd #{@clone_path} && git log"
+      command = "cd #{@clone_path} && git log #{from} #{to}"
       result = []
 
       error = ''
