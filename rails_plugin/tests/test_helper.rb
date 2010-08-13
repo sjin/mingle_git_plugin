@@ -35,11 +35,6 @@ FileUtils.mkdir_p TMP_DIR
 FileUtils.mkdir_p MINGLE_DATA_DIR
 FileUtils.mkdir_p DB_PATH
 
-# since app/model is not on the LOAD_PATH
-Dir[File.dirname(__FILE__) + '/../app/models/*.rb'].each do |lib_file|
-  require File.expand_path(lib_file)
-end
-
 # setup logger
 ActiveRecord::Base.logger = Logger.new($stdout)
 ActiveRecord::Base.logger.level = Logger::ERROR
@@ -76,6 +71,30 @@ class Project
 
   def identifier
     "test_project"
+  end
+end
+
+# PasswordEncryption is a direct copy of Mingle source that allows for the existing
+# SVN and Perforce plugins to have fairly simple controllers. Mixing this module into your
+# configuration allows for the password field to be automatically encrypted by the project.
+#
+# This code is included here because HgConfiguration mixes in this model. This
+# requires that some definition of the module be present in test code in order for tests to run.
+# When deployed to Mingle, Mingle will supply this code.
+module PasswordEncryption
+  def password=(passw)
+    passw = passw.strip
+    if !passw.blank?
+      write_attribute(:password, project.encrypt(passw))
+    else
+      write_attribute(:password, passw)
+    end
+  end
+
+  def password
+    ps = super
+    return ps if ps.blank?
+    project.decrypt(ps)
   end
 end
 
@@ -182,4 +201,9 @@ class TestRepositoryFactory
     end
   end
 
+end
+
+# since app/model is not on the LOAD_PATH
+Dir[File.dirname(__FILE__) + '/../app/models/*.rb'].each do |lib_file|
+  require File.expand_path(lib_file)
 end

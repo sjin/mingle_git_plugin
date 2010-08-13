@@ -4,13 +4,13 @@ class GitConfiguration < ActiveRecord::Base
   # supplies create_or_update method that keeps controller simple
   # supplies mark_for_deletion method used by mingle to manage config lifecycle
   include RepositoryModelHelper
-  
+  include PasswordEncryption
+
   # mingle model utility that will strip leading and trailing whitespace from all attributes
   strip_on_write
   # configuration must belong to a project
   belongs_to :project
   validates_presence_of :repository_path
-  before_save :encrypt_password
   after_create :remove_cache_dirs
   after_destroy :remove_cache_dirs
 
@@ -111,16 +111,6 @@ class GitConfiguration < ActiveRecord::Base
 
   private
   
-  # use mingle project's encryption capability to protect password in DB
-  def encrypt_password
-    pwd_attr = @attributes['password']
-    if !pwd_attr.blank?
-      write_attribute(:password, project.encrypt(pwd_attr))
-    else
-      write_attribute(:password, pwd_attr)
-    end
-  end
-
   def remove_cache_dirs
     FileUtils.rm_rf(File.expand_path(File.join(MINGLE_DATA_DIR, 'git', id.to_s)))
   end
