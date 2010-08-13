@@ -180,7 +180,7 @@ class TestRepositoryFactory
   end
 
   def extract_bundle(zip_file)
-    sh "cd #{dir} && unzip -qo ../#{zip_file}"
+    sh "rm -rf #{dir} && mkdir -p #{dir} && cd #{dir} && unzip -qo ../#{zip_file}"
   end
 
   def source_browser_cache_path

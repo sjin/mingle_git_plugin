@@ -4,9 +4,9 @@ class GitChangesetTest < Test::Unit::TestCase
 
   def test_can_get_changes
     repository = TestRepositoryFactory.create_repository_without_source_browser('one_changeset')
-    changeset = repository.changeset('ce197fe9a75877f9f8ba48dfb4c5b95de655fab1')
+    changeset = repository.changeset('19df35cdb7d0219cb2b1adfe791d7b27bf14fda8')
     changes = changeset.changes
-    assert_equal ['README.txt'], changes.map(&:path)
+    assert_equal ['README'], changes.map(&:path)
   end
 
   def test_change_action_when_add

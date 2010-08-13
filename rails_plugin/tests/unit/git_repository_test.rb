@@ -36,11 +36,11 @@ class GitRepositoryTest < Test::Unit::TestCase
 
   def test_changeset_returns_changeset_when_it_exists
     repository = TestRepositoryFactory.create_repository_without_source_browser('hello')
-    changeset = repository.changeset('cd96e8911a62a9ab9c2c3d1596b10dd01f62bb4c')
-    assert_equal 'cd96e8911a62a9ab9c2c3d1596b10dd01f62bb4c', changeset.commit_id
-    assert_equal "Ketan Padegaonkar <KetanPadegaonkar@gmail.com>", changeset.author
-    assert_equal "added another hello world", changeset.description
-    assert_equal 'Wed Mar 17 03:32:14 UTC 2010', changeset.time.utc.to_s
+    changeset = repository.changeset('23f49e83ecbd82c1dd4884a514a07bd992e102be')
+    assert_equal '23f49e83ecbd82c1dd4884a514a07bd992e102be', changeset.commit_id
+    assert_equal "mpm@selenic.com <mpm@selenic.com>", changeset.author
+    assert_equal "Create a makefile", changeset.description
+    assert_equal 'Fri Aug 26 08:21:28 UTC 2005', changeset.time.utc.to_s
   end
 
   def test_next_changesets_returns_empty_array_when_repository_empty
@@ -54,18 +54,18 @@ class GitRepositoryTest < Test::Unit::TestCase
     assert_equal 5, changesets.size
 
     sample_changeset = changesets[2]
-    assert_equal 'f4ffd95af49c7e722732ea8eb716c23b16ce7762', sample_changeset.commit_id
-    assert_equal "Ketan Padegaonkar <KetanPadegaonkar@gmail.com>", sample_changeset.author
-    assert_equal "added another hello world", sample_changeset.description
-    assert_equal 'Wed Mar 17 03:32:19 UTC 2010', sample_changeset.time.utc.to_s
+    assert_equal 'b5ad6f93ec7252f8acd40a954451f3c25615a699', sample_changeset.commit_id
+    assert_equal "Bryan O'Sullivan <bos@serpentine.com>", sample_changeset.author
+    assert_equal "Introduce a typo into hello.c.", sample_changeset.description
+    assert_equal 'Sun Aug 17 05:05:04 UTC 2008', sample_changeset.time.utc.to_s
   end
 
   def test_next_changesets_returns_changesets_from_zero_up_to_limit_when_repos_has_more_changesets_than_limit
     repository = TestRepositoryFactory.create_repository_without_source_browser('hello')
     changesets = repository.next_changesets(nil, 2)
     assert_equal 2, changesets.size
-    assert_equal 'ca1ec263c4dfe2b592436a1c894288fe552c8348', changesets[0].commit_id
-    assert_equal 'cd96e8911a62a9ab9c2c3d1596b10dd01f62bb4c', changesets[1].commit_id
+    assert_equal '2cf7a6a5e25f022ac4b18ce7165661cdc8177013', changesets[0].commit_id
+    assert_equal '23f49e83ecbd82c1dd4884a514a07bd992e102be', changesets[1].commit_id
   end
 
   def test_next_changesets_returns_changesets_from_start_up_to_limit_when_repos_has_more_changesets_than_limit
@@ -73,14 +73,14 @@ class GitRepositoryTest < Test::Unit::TestCase
     first_commit = 'ca1ec263c4dfe2b592436a1c894288fe552c8348'
     changesets = repository.next_changesets(first_commit, 2)
     assert_equal 2, changesets.size
-    assert_equal 'cd96e8911a62a9ab9c2c3d1596b10dd01f62bb4c', changesets[0].commit_id
-    assert_equal 'f4ffd95af49c7e722732ea8eb716c23b16ce7762', changesets[1].commit_id
+    assert_equal '23f49e83ecbd82c1dd4884a514a07bd992e102be', changesets[0].commit_id
+    assert_equal 'b5ad6f93ec7252f8acd40a954451f3c25615a699', changesets[1].commit_id
   end
 
 
   def test_next_changesets_returns_empty_array_when_project_up_to_date_with_repository
     repository = TestRepositoryFactory.create_repository_without_source_browser('hello')
-    youngest_in_project = '992243dbd7d065714076128254ba81e30af851e7'
+    youngest_in_project = '9f953d7cfd6eff8f79e5e383e7bca4b0cf89e13a'
     assert_equal [], repository.next_changesets(youngest_in_project, 100)
   end
 
@@ -132,7 +132,7 @@ class GitRepositoryTest < Test::Unit::TestCase
     source_browser.ensure_file_cache_synched_for('63589c09db884b294626e95f9063027babe93f62')
 
     ['MASTER', 'master', 'head', 'HEAD'].each do |changeset|
-      assert_equal '63589c09db884b294626e95f9063027babe93f62', repository.node('', changeset).commit_id
+      assert_equal 'e036967054a4f0ad0736c354053bcd27c2d6cb12', repository.node('', changeset).commit_id
     end
   end
 
@@ -153,7 +153,7 @@ class GitRepositoryTest < Test::Unit::TestCase
       super
     end
 
-    assert_equal '63589c09db884b294626e95f9063027babe93f62', repository.node('', 'head').commit_id
+    assert_equal 'e036967054a4f0ad0736c354053bcd27c2d6cb12', repository.node('', 'head').commit_id
   end
 
   #
