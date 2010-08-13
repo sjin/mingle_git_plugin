@@ -3,6 +3,8 @@ unless RUBY_PLATFORM =~ /java/
   require 'open3'
   # this is used only in tests
   class GitClient
+    
+    cattr_accessor :logging_enabled
 
     def initialize(master_path, clone_path, style_dir)
       @master_path = master_path
@@ -13,7 +15,7 @@ unless RUBY_PLATFORM =~ /java/
     def repository_empty?
       command = "cd #{@clone_path} && /opt/local/bin/git log -1"
       result = ""
-      Open3.popen3(command) do |stdin, stdout, stderr|
+      execute(command) do |stdin, stdout, stderr|
         begin
           result = stdout.readline
         rescue Exception => e
@@ -34,7 +36,7 @@ unless RUBY_PLATFORM =~ /java/
       result = []
 
       error = ''
-      Open3.popen3(command) do |stdin, stdout, stderr|
+      execute(command) do |stdin, stdout, stderr|
         log_entry = {}
         error = stderr.readlines
         stdout.each_line do |line|
@@ -59,18 +61,17 @@ unless RUBY_PLATFORM =~ /java/
       result
     end
 
-
     def git_patch_for(commit_id, git_patch)
       command = "cd #{@clone_path} && /opt/local/bin/git log -1 -p #{commit_id} -M"
 
       error = ''
-      Open3.popen3(command) do |stdin, stdout, stderr|
+      execute(command) do |stdin, stdout, stderr|
         keep_globbing = true
         stdout.each_line do |line|
           # keep eating away all content until we find the actual diff
           (keep_globbing = false) if line.starts_with?('diff')
-
-          git_patch.add_line(line) unless keep_globbing
+          
+          git_patch.add_line(line) unless (keep_globbing || line.starts_with?('similarity index '))
 
         end
       end
@@ -82,6 +83,12 @@ unless RUBY_PLATFORM =~ /java/
 
     def binary?(path, commit_id)
       
+    end
+    
+    private
+    def execute(command, &block)
+      puts "Executing command:\n#{command}\n Called from #{caller}" if GitClient.logging_enabled
+      Open3.popen3(command, &block)
     end
   end
 

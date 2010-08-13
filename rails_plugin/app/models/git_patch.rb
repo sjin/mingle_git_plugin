@@ -16,7 +16,7 @@ class GitPatch
   end
 
   def add_line(line)
-    if (line =~ /^diff/ && @current_change_lines.size > 0)
+    if (line =~ /^diff --git/ && @current_change_lines.size > 0)
       add_current_change
     end
 

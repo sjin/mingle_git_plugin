@@ -6,6 +6,8 @@ unless RUBY_PLATFORM =~ /java/
   $LOAD_PATH.unshift File.expand_path(File.join(File.dirname(__FILE__), '../../tools/jruby-1.2.0/lib/ruby/gems/1.8/gems/activerecord-2.3.3/lib'))
 end
 
+$LOAD_PATH.unshift(File.expand_path(File.join(File.dirname(__FILE__), '../app/models')))
+
 require 'active_support'
 require 'active_record'
 
@@ -15,6 +17,7 @@ require 'test/unit'
 require 'md5'
 require 'fileutils'
 
+require 'pp'
 include FileUtils
 
 # don't log rake output to console, it's messes up the output

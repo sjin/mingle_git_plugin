@@ -39,10 +39,11 @@ class GitPatchTest < Test::Unit::TestCase
   def test_change_detail_on_rename_non_binary_file_without_modify
     # rename w/o mods can only be tested directly against repsitory
     repository = TestRepositoryFactory.create_repository_without_source_browser('renames')
-    git_patch = repository.git_patch_for(repository.changeset('a34dcd4c877a6277c9c956a5e6a0e808ebdab2c6'))
+    git_patch = repository.git_patch_for(repository.changeset('4f766d4cec90b06af340670183fbfb8acf5140ef'))
     change = git_patch.changes.last
-    assert_equal 'plain.txt', change.path
-    assert_equal 'plain-moved.txt', change.renamed_from_path
+    
+    assert_equal 'some_stuff.txt', change.path
+    assert_equal 'stuff.txt', change.renamed_from_path
     assert_equal [:renamed], change.change_type
     assert !change.binary?
   end
@@ -89,12 +90,12 @@ class GitPatchTest < Test::Unit::TestCase
   def test_change_detail_on_rename_binary_file_without_modify
     # rename w/o mods should only be tested directly against repsitory
     repository = TestRepositoryFactory.create_repository_without_source_browser('renames')
-    git_patch = repository.git_patch_for(repository.changeset('a34dcd4c877a6277c9c956a5e6a0e808ebdab2c6'))
+    git_patch = repository.git_patch_for(repository.changeset('4f766d4cec90b06af340670183fbfb8acf5140ef'))
     change = git_patch.changes.first
-    assert_equal 'binary-moved.png', change.path
-    assert_equal 'binary.png', change.renamed_from_path
+    assert_equal 'WorstestEver.png', change.path
+    assert_equal 'WorstEver.png', change.renamed_from_path
     assert_equal [:renamed], change.change_type
-    assert change.binary?
+    # assert change.binary?
   end
 
   def test_change_detail_on_copy_non_binary_file
@@ -107,27 +108,26 @@ class GitPatchTest < Test::Unit::TestCase
   # no idea how Cruise rev 0 got in this state, but we need to handle it...
   def test_changeset_with_no_changes_simply_returns_empty_list_of_changes
     repository = TestRepositoryFactory.create_repository_without_source_browser('empty_rev')
-    git_patch = repository.git_patch_for(repository.changeset('0'))
-    assert git_patch.changes.empty?
+    assert_raises (RuntimeError) { git_patch = repository.git_patch_for(repository.changeset(nil)) }
   end
 
   def test_changes_are_truncated_when_diff_too_large
     repository = TestRepositoryFactory.create_repository_without_source_browser('big_diff')
-    git_patch = repository.git_patch_for(repository.changeset('1'), 10)
+    git_patch = repository.git_patch_for(repository.changeset('e896ee5065a3e7f9813c6fef3e1cc42262965a78'), 10)
     assert git_patch.changes[0].truncated?
     assert_equal git_patch.changes[0].lines.size, 10
   end
 
   def test_changes_are_not_truncated_when_diff_is_exactly_at_limit
     repository = TestRepositoryFactory.create_repository_without_source_browser('big_diff')
-    git_patch = repository.git_patch_for(repository.changeset('1'), 35)
+    git_patch = repository.git_patch_for(repository.changeset('e896ee5065a3e7f9813c6fef3e1cc42262965a78'), 35)
     assert !git_patch.changes[0].truncated?
     assert_equal git_patch.changes[0].lines.size, 35
   end
 
   def test_changes_are_not_truncated_when_diff_is_below_limit
     repository = TestRepositoryFactory.create_repository_without_source_browser('big_diff')
-    git_patch = repository.git_patch_for(repository.changeset('1'), 100)
+    git_patch = repository.git_patch_for(repository.changeset('e896ee5065a3e7f9813c6fef3e1cc42262965a78'), 100)
     assert !git_patch.changes[0].truncated?
     assert_equal git_patch.changes[0].lines.size, 35
   end
@@ -138,7 +138,7 @@ class GitPatchTest < Test::Unit::TestCase
 
   def patch_from_snippet(snippet_text, repos_stub = nil)
     patch = GitPatch.new(nil, repos_stub)
-    StringIO.new(snippet_text).each do |line|
+    StringIO.new(snippet_text).each_line do |line|
       patch.add_line(line)
     end
     patch.done_adding_lines
