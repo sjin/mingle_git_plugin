@@ -6,7 +6,6 @@ class GitChangesetTest < Test::Unit::TestCase
     repository = TestRepositoryFactory.create_repository_without_source_browser('one_changeset')
     changeset = repository.changeset('ce197fe9a75877f9f8ba48dfb4c5b95de655fab1')
     changes = changeset.changes
-    puts changes.inspect
     assert_equal ['README.txt'], changes.map(&:path)
   end
 
