@@ -1,6 +1,7 @@
-# Copyright 2010 ThoughtWorks, Inc. Licensed under the Apache License, Version 2.0.
+# Copyright (c) 2010 ThoughtWorks Inc. (http://thoughtworks.com)
+# Licenced under the Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0.txt)
 
-require File.expand_path File.join(File.dirname(__FILE__), '..', 'test_helper')
+require File.expand_path(File.join(File.dirname(__FILE__), '..', 'test_helper'))
 
 class GitHtmlDiffTest < Test::Unit::TestCase
 

@@ -1,3 +1,5 @@
+# Copyright (c) 2010 ThoughtWorks Inc. (http://thoughtworks.com)
+# Licenced under the Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0.txt)
 
 # GitSourceBrowserSynch is GitRepository decorator that 
 # keeps the source browser in synch with the repository
