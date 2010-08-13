@@ -22,6 +22,7 @@ RakeFileUtils.verbose_flag = false
 
 # load up stuff that mingle provides, but is not available in this test harness
 require File.expand_path(File.join(File.dirname(__FILE__), 'mingle_helper'))
+require File.expand_path(File.join(File.dirname(__FILE__), 'patch_helper'))
 
 # set the test env
 RAILS_ENV = 'test'

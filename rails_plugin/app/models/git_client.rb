@@ -61,7 +61,7 @@ unless RUBY_PLATFORM =~ /java/
 
 
     def git_patch_for(commit_id, git_patch)
-      command = "cd #{@clone_path} && /opt/local/bin/git log -p #{commit_id}"
+      command = "cd #{@clone_path} && /opt/local/bin/git log -1 -p #{commit_id} -M"
 
       error = ''
       Open3.popen3(command) do |stdin, stdout, stderr|
@@ -78,6 +78,10 @@ unless RUBY_PLATFORM =~ /java/
       raise StandardError.new("Could not execute '#{command}'. The error was:\n#{error}" ) unless error.empty?
 
       git_patch.done_adding_lines
+    end
+
+    def binary?(path, commit_id)
+      
     end
   end
 

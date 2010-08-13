@@ -83,7 +83,7 @@ class GitGitChange
         # of if the change type is not modification, so we'll use those attributes to
         # determine which type of change to construct.  this seems a bit fragile.
         if !factory.binary? && factory.modify?
-          GitGitChange::Diffable.new(factory.path, change_lines, factory.change_type, factory.renamed_from_path, truncated)
+          HgGitChange::Diffable.new(factory.path, change_lines, factory.change_type, factory.renamed_from_path, truncated)
         else
           GitGitChange::NotDiffable.new(factory.path, factory.binary?, factory.change_type, factory.renamed_from_path)
         end
@@ -98,10 +98,10 @@ class GitGitChange
 
     def path
       if rename?
-        @lines[2] =~ /(^rename\sto\s)(.*$)/
+        @lines[3] =~ /(^rename\sto\s)(.*$)/
         $2
       elsif copy?
-        @lines[2] =~ /(^copy\sto\s)(.*$)/
+        @lines[3] =~ /(^copy\sto\s)(.*$)/
         $2
       else
         a_and_b_paths = @lines[0][11..-1]
@@ -111,7 +111,7 @@ class GitGitChange
 
     def renamed_from_path
       if rename?
-        @lines[1] =~ /(^rename\sfrom\s)(.*$)/
+        @lines[2] =~ /(^rename\sfrom\s)(.*$)/
         $2
       else
         nil
@@ -131,11 +131,11 @@ class GitGitChange
     end
 
     def copy?
-      @lines[2] =~ /^copy\sto/
+      @lines[3] =~ /^copy\sto/
     end
 
     def rename?
-      @lines[2] =~ /^rename\sto/
+      @lines[3] =~ /^rename\sto/
     end
 
     def binary?

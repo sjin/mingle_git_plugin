@@ -92,11 +92,12 @@ class GitRepository
   #     @git_client.dels_in(changeset_identifier)
   #   end
   # 
-  #   #:nodoc:
-  #   def binary?(path, changeset_identifier)
-  #     @git_client.binary?(path, changeset_identifier)
-  #   end
-  #     
+
+  #:nodoc:
+  def binary?(path, commit_id)
+    @git_client.binary?(path, commit_id)
+  end
+     
   #   #:nodoc:
   def pull
     return if @pulled

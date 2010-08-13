@@ -1,1 +1,2 @@
-rails_plugin/tmp
+/rails_plugin/tmp
+/out
