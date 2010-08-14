@@ -6,19 +6,44 @@ unless RUBY_PLATFORM =~ /java/
   require 'open3'
   # this is used only in tests
   class GitClient
-    
+
     cattr_accessor :logging_enabled
 
     def initialize(master_path, clone_path, style_dir)
       @master_path = master_path
       @clone_path = clone_path
+      if master_path && master_path =~ /\//
+        @clone_path += '/' + master_path.split('/').last.gsub(/.git$/,'') + '.git'
+      end
       @style_dir = style_dir
     end
 
+    def try_to_connect
+
+    end
+
+    def ensure_local_clone
+      base_dir = File.dirname(@clone_path)
+      FileUtils.mkdir_p(base_dir)
+      head_file = @clone_path + '/HEAD'
+      unless File.file?(head_file)
+        command = "cd #{base_dir} && /opt/local/bin/git --no-pager clone --bare #{@master_path}"
+        error = ''
+        execute(command) do |stdin, stdout, stderr|
+          stdin.close
+          error = stderr.readlines
+        end
+
+        raise StandardError.new("Could not execute '#{command}'. The error was:\n#{error}" ) unless error.empty?
+
+      end
+    end
+
     def repository_empty?
-      command = "cd #{@clone_path} && /opt/local/bin/git log -1"
+      command = "cd #{@clone_path} && /opt/local/bin/git --no-pager log -1"
       result = ""
       execute(command) do |stdin, stdout, stderr|
+        stdin.close
         begin
           result = stdout.readline
         rescue Exception => e
@@ -35,11 +60,12 @@ unless RUBY_PLATFORM =~ /java/
     def log_for_revs(from, to)
       raise "Repository is empty!" if repository_empty?
 
-      command = "cd #{@clone_path} && /opt/local/bin/git log #{from} #{to}"
+      command = "cd #{@clone_path} && /opt/local/bin/git --no-pager log #{from} #{to}"
       result = []
 
       error = ''
       execute(command) do |stdin, stdout, stderr|
+        stdin.close
         log_entry = {}
         error = stderr.readlines
         stdout.each_line do |line|
@@ -65,15 +91,16 @@ unless RUBY_PLATFORM =~ /java/
     end
 
     def git_patch_for(commit_id, git_patch)
-      command = "cd #{@clone_path} && /opt/local/bin/git log -1 -p #{commit_id} -M"
+      command = "cd #{@clone_path} && /opt/local/bin/git --no-pager log -1 -p #{commit_id} -M"
 
       error = ''
       execute(command) do |stdin, stdout, stderr|
+        stdin.close
         keep_globbing = true
         stdout.each_line do |line|
           # keep eating away all content until we find the actual diff
           (keep_globbing = false) if line.starts_with?('diff')
-          
+
           git_patch.add_line(line) unless (keep_globbing || line.starts_with?('similarity index '))
 
         end
@@ -85,9 +112,35 @@ unless RUBY_PLATFORM =~ /java/
     end
 
     def binary?(path, commit_id)
-      
+
     end
-    
+
+    # return a hash containing the file path and the
+    def ls_tree(path, commit_id)
+      tree = {}
+
+      command = "cd #{@clone_path} && /opt/local/bin/git --no-pager ls-tree #{commit_id} #{path}"
+
+      execute(command) do |stdin, stdout, stderr|
+        stdin.close
+        stdout.each_line do |line|
+          parts = line.split(/\s+/)
+          tree[parts.last] = {:type => parts.second.to_sym, :object_id => parts.third}
+        end
+      end
+
+      tree
+    end
+
+    def cat(path, object_id, io)
+      command = "cd #{@clone_path} && /opt/local/bin/git --no-pager cat-file blob #{object_id}"
+
+      execute(command) do |stdin, stdout, stderr|
+        stdin.close
+        io << stdout.read
+      end
+    end
+
     private
     def execute(command, &block)
       puts "Executing command:\n#{command}\n Called from #{caller}" if GitClient.logging_enabled

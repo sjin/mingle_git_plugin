@@ -16,7 +16,7 @@ class GitRepository
     @git_client.repository_empty?
   end
 
-  # *returns*: the GitChangeset identified by treeish.  will work for commit_id, 
+  # *returns*: the GitChangeset identified by treeish.  will work for commit_id,
   # short identifier, long identifier. raises error if changset does not exist.
   def changeset(commit_id)
     construct_changeset(@git_client.log_for_rev(commit_id))
@@ -89,12 +89,12 @@ class GitRepository
   #   def files_in(changeset_identifier)
   #     @git_client.files_in(changeset_identifier)
   #   end
-  #     
+  #
   #   #:nodoc:
   #   def dels_in(changeset_identifier)
   #     @git_client.dels_in(changeset_identifier)
   #   end
-  # 
+  #
 
   #:nodoc:
   def binary?(path, commit_id)
@@ -108,16 +108,15 @@ class GitRepository
     @pulled = true
   end
 
+  #:nodoc:
+  def ensure_local_clone
+    @git_client.ensure_local_clone
+  end
+  
+  def try_to_connect
+    @git_client.try_to_connect
+  end
   #
-  #   #:nodoc:
-  #   def ensure_local_clone
-  #     @git_client.ensure_local_clone
-  #   end   
-  # 
-  #   def try_to_connect
-  #     @git_client.try_to_connect
-  #   end
-  #     
   #:nodoc:
   def construct_changeset(log_entry)
     GitChangeset.new(log_entry, self)

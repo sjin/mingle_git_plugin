@@ -18,7 +18,8 @@ class GitChangeset
 
   class << self
     def short_identifier(identifier)
-      identifier[0...12]
+      # FIXME: just a hack to get things working.
+      identifier[0...12] unless identifier.empty?
     end
   end
 

@@ -37,7 +37,7 @@ class GitConfiguration < ActiveRecord::Base
 
   # *returns*: table header and row partials to be used in source directory browser
   def view_partials
-    {:node_table_header => 'git_source/node_table_header', 
+    {:node_table_header => 'git_source/node_table_header',
      :node_table_row => 'git_source/node_table_row' }
   end
 
@@ -62,16 +62,18 @@ class GitConfiguration < ActiveRecord::Base
 
     if uri && !uri.password.blank?
       errors.add_to_base(%{
-        Do not store repository password as part of the URL. 
+        Do not store repository password as part of the URL.
         Please use the supplied form field.
-      }) 
+      })
     end
   end
   
   # *returns*: an instance of GitRepository for Mercurial repository sepcified by this configuration
   def repository
     # the local path where the repo is cloned
-    clone_path = File.expand_path(File.join(MINGLE_DATA_DIR, "git", id.to_s, 'repository'))
+    clone_path = File.expand_path(File.join(MINGLE_DATA_DIR, "git", project.identifier))
+    puts "clone_path: #{clone_path}"
+    
     # the location for templates that renders the repo in mingle
     style_dir = File.expand_path("#{File.dirname(__FILE__)}/../templates")
     
@@ -82,11 +84,19 @@ class GitConfiguration < ActiveRecord::Base
     
     source_browser = GitSourceBrowser.new(scm_client, source_browser_cache_path, mingle_rev_repos)
     
-    repository = HgRepository.new(scm_client, source_browser)
+    repository = GitRepository.new(scm_client, source_browser)
     GitRepositoryClone.new(GitSourceBrowserSynch.new(repository, source_browser))
   end
+  
+  def repository_location_changed?(configuration_attributes)
+    self.repository_path != configuration_attributes[:repository_path]
+  end
+  
+  def clone_repository_options
+    {:repository_path => self.repository_path, :username => self.username, :password => self.password}
+  end
 
-  # Constructs a url with the auth info. 
+  # Constructs a url with the auth info.
   # This is useful in case a user provides just a url and the user/pass is stored in the db.
   def repository_path_with_userinfo
     uri = URI.parse(repository_path)

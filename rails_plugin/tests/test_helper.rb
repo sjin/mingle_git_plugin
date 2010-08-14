@@ -120,7 +120,7 @@ class TestRepositoryFactory
 
 
       style_dir = File.expand_path("#{File.dirname(__FILE__)}/../app/templates")
-      git_client = GitClient.new(nil, factory.dir, style_dir)
+      git_client = GitClient.new('', factory.dir, style_dir)
 
 
       source_browser = GitSourceBrowser.new(

@@ -11,18 +11,43 @@ class GitSourceBrowser
   def ensure_file_cache_synched_for(changeset_identifier = nil)
 
   end
+  
+  def tip_node
+  end
 
   def node(path, commit_id)
-    DirNode.new(path, commit_id)
+    ls_tree = @git_client.ls_tree(path, commit_id)
+    
+    if (ls_tree.size == 1)
+      create_node(ls_tree.values.first, path, commit_id)
+    else
+      children = ls_tree.map{|child_path, child| create_node(child, child_path, commit_id)}
+      DirNode.new(path, commit_id, children)
+    end
   end
 
   def head_node(path, commit_id)
-    DirNode.new(path, commit_id)
+    Node.new(path, commit_id)
   end
+  
+  def raw_file_cache_content(commit_id)
+    @git_client.ls_tree(commit_id)
+  end
+  
+  private
+  
+  def create_node(child, path, commit_id)
+    if (child[:type] == :tree)
+      DirNode.new(path, commit_id, nil)
+    else
+      FileNode.new(path, commit_id, child[:object_id], @git_client)
+    end
+  end
+  
 end
 
 
-class DirNode
+class Node
 
   attr_reader :path
   attr_reader :commit_id
@@ -31,5 +56,80 @@ class DirNode
     @path = path
     @commit_id = commit_id
   end
+  
+  def name
+    path.split('/').last
+  end
+  
+  def display_path
+    path
+  end
+  
+  def path_components
+    path.split('/')
+  end
+  
+  def most_recent_committer
+    'committer'
+  end
+  
+  def most_recent_commit_time
+    Time.new
+  end
+  
+  def most_recent_commit_desc
+    'last commit desc'
+  end
+  
+  def most_recent_changeset_identifier
+    'changeset_identifier'
+  end
+  
+  def parent_path_components
+    path_components[0..-2]
+  end
+  
+  def parent_display_path
+    parent_path_components.join('/')
+  end
+end
 
+class DirNode < Node
+  attr_reader :children
+  
+  def initialize(path, commit_id, children)
+    super(path, commit_id)
+    # raise 'foo' if children.empty?
+    @children = children
+  end
+  
+  def dir?
+    true
+  end
+    
+  def root_node?
+    path.empty?
+  end
+  
+end
+
+class FileNode < Node
+  
+  def initialize(path, commit_id, object_id, git_client)
+    super(path, commit_id)
+    @object_id = object_id
+    @git_client = git_client
+  end
+  
+  def file_contents(io)
+    @git_client.cat(path, @object_id, io)
+  end
+  
+  def dir?
+    false
+  end
+  
+  def binary?
+    false
+  end
 end
