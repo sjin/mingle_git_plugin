@@ -2,7 +2,8 @@
 # Licenced under the Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0.txt)
 
 require 'time'
-unless RUBY_PLATFORM =~ /java/
+require 'fileutils'
+# unless RUBY_PLATFORM =~ /java/
   require 'open3'
   # this is used only in tests
   class GitClient
@@ -20,6 +21,18 @@ unless RUBY_PLATFORM =~ /java/
 
     def try_to_connect
 
+    end
+    
+    def pull
+      command = "cd #{@clone_path} && /opt/local/bin/git --no-pager fetch -q"
+      
+      error = ''
+      execute(command) do |stdin, stdout, stderr|
+        stdin.close
+        error = stderr.readlines
+      end
+      
+      raise StandardError.new("Could not execute '#{command}'. The error was:\n#{error}" ) unless error.empty?
     end
 
     def ensure_local_clone
@@ -120,15 +133,34 @@ unless RUBY_PLATFORM =~ /java/
       tree = {}
 
       command = "cd #{@clone_path} && /opt/local/bin/git --no-pager ls-tree #{commit_id} #{path}"
-
+      
       execute(command) do |stdin, stdout, stderr|
         stdin.close
         stdout.each_line do |line|
-          parts = line.split(/\s+/)
-          tree[parts.last] = {:type => parts.second.to_sym, :object_id => parts.third}
+          mode, type, object_id, path = line.split(/\s+/)
+          type = type.to_sym
+          path += '/' if type == :tree
+          
+          tree[path] = {:type => type, :object_id => object_id}
         end
       end
+      
+      if dir?(tree)
+        tree = {}
+        
+        command = "cd #{@clone_path} && /opt/local/bin/git --no-pager ls-tree #{commit_id} #{path}"
 
+        execute(command) do |stdin, stdout, stderr|
+          stdin.close
+          stdout.each_line do |line|
+            mode, type, object_id, path = line.split(/\s+/)
+            type = type.to_sym
+            path += '/' if type == :tree
+
+            tree[path] = {:type => type, :object_id => object_id}
+          end
+        end
+      end
       tree
     end
 
@@ -142,12 +174,18 @@ unless RUBY_PLATFORM =~ /java/
     end
 
     private
+    
+    private 
+    def dir?(tree)
+      tree.size == 1 && tree.values.first[:type] == :tree
+    end
+    
     def execute(command, &block)
       puts "Executing command:\n#{command}\n Called from #{caller}" if GitClient.logging_enabled
       Open3.popen3(command, &block)
     end
   end
-
-else
-  raise 'you need to implement git for the jruby platform'
-end
+# 
+# else
+#   raise 'you need to implement git for the jruby platform'
+# end
