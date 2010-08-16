@@ -16,12 +16,12 @@ class GitSourceBrowser
   end
 
   def node(path, commit_id)
-    ls_tree = @git_client.ls_tree(path, commit_id)
+    tree = @git_client.ls_tree(path, commit_id)
     
-    if (ls_tree.size == 1)
-      create_node(ls_tree.values.first, path, commit_id)
+    if (tree.size == 1)
+      create_node(tree.values.first, path, commit_id)
     else
-      children = ls_tree.map{|child_path, child| create_node(child, child_path, commit_id)}
+      children = tree.map{|child_path, child| create_node(child, child_path, commit_id)}
       DirNode.new(path, commit_id, children)
     end
   end
@@ -35,6 +35,10 @@ class GitSourceBrowser
   end
   
   private
+  
+  def dir?(tree)
+    tree.size == 1 && tree.first[:type] == :tree
+  end
   
   def create_node(child, path, commit_id)
     if (child[:type] == :tree)
@@ -53,7 +57,7 @@ class Node
   attr_reader :commit_id
 
   def initialize(path, commit_id)
-    @path = path
+    @path = path.gsub(/\/$/, '')
     @commit_id = commit_id
   end
   

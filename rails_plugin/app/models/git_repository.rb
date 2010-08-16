@@ -35,8 +35,6 @@ class GitRepository
     from = 'head' if skip_up_to.nil?
     to = '' if skip_up_to.nil?
 
-    puts "getting revisions from: #{from}..#{to}"
-
     start_index = 0 if skip_up_to.nil?
     start_index = 1 unless skip_up_to.nil?
     log_entries = @git_client.log_for_revs(from, to).reverse

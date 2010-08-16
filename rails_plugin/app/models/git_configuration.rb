@@ -27,7 +27,7 @@ class GitConfiguration < ActiveRecord::Base
   # *returns*: git-specific terms for mingle display
   def vocabulary
     {
-      'revision' => 'commit',
+      'revision' => 'changeset',
       'committed' => 'author',
       'repository' => 'repository',
       'head' => 'master',

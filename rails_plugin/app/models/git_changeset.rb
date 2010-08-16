@@ -15,6 +15,18 @@ class GitChangeset
       instance_variable_set("@#{k}", v)
     end
   end
+  
+  def number
+    commit_id
+  end
+  
+  def message
+    description
+  end
+  
+  def version_control_user
+    author
+  end
 
   class << self
     def short_identifier(identifier)
