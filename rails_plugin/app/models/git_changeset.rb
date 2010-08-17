@@ -8,6 +8,7 @@ class GitChangeset
   attr_reader :description
   attr_reader :author
   attr_reader :time
+  attr_accessor :number
 
   def initialize(attributes, repository)
     @repository = repository
@@ -16,7 +17,7 @@ class GitChangeset
     end
   end
   
-  def number
+  def identifier
     commit_id
   end
   

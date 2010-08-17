@@ -106,12 +106,16 @@ end
 
 class TestRepositoryFactory
   class << self
-    def create_repository_without_source_browser(bundle = nil, options = {})
+    
+    def create_client_from_bundle(bundle = nil, options={})
       factory = TestRepositoryFactory.new(bundle, options)
       factory.unbundle
 
-      git_client = GitClient.new(nil, factory.dir, nil)
-      GitRepository.new(git_client, nil)
+      GitClient.new(nil, factory.dir, nil)
+    end
+
+    def create_repository_without_source_browser(bundle = nil, options = {})
+      GitRepository.new(create_client_from_bundle(bundle, options), nil)
     end
 
     def create_repository_with_source_browser(bundle = nil, options = {})

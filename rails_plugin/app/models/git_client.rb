@@ -67,13 +67,13 @@ require 'fileutils'
     end
 
     def log_for_rev(rev)
-      log_for_revs(rev, rev).first
+      log_for_revs(nil, rev).last
     end
 
     def log_for_revs(from, to)
       raise "Repository is empty!" if repository_empty?
-
-      command = "cd #{@clone_path} && /opt/local/bin/git --no-pager log #{from} #{to}"
+      window = from.blank? ? to : "#{from}..#{to}"
+      command = "cd #{@clone_path} && /opt/local/bin/git --no-pager log --reverse #{window}"
       result = []
 
       error = ''

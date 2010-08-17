@@ -55,6 +55,8 @@ class GitRepositoryTest < Test::Unit::TestCase
     repository = TestRepositoryFactory.create_repository_without_source_browser('hello')
     changesets = repository.next_changesets(nil, 100)
     assert_equal 5, changesets.size
+    
+    assert_equal (0..4).to_a, changesets.collect(&:number)
 
     sample_changeset = changesets[2]
     assert_equal 'b5ad6f93ec7252f8acd40a954451f3c25615a699', sample_changeset.commit_id
@@ -62,9 +64,10 @@ class GitRepositoryTest < Test::Unit::TestCase
     assert_equal "Introduce a typo into hello.c.", sample_changeset.description
     assert_equal 'Sun Aug 17 05:05:04 UTC 2008', sample_changeset.time.utc.to_s
   end
-
+  
   def test_next_changesets_returns_changesets_from_zero_up_to_limit_when_repos_has_more_changesets_than_limit
     repository = TestRepositoryFactory.create_repository_without_source_browser('hello')
+    
     changesets = repository.next_changesets(nil, 2)
     assert_equal 2, changesets.size
     assert_equal '2cf7a6a5e25f022ac4b18ce7165661cdc8177013', changesets[0].commit_id
@@ -73,11 +76,16 @@ class GitRepositoryTest < Test::Unit::TestCase
 
   def test_next_changesets_returns_changesets_from_start_up_to_limit_when_repos_has_more_changesets_than_limit
     repository = TestRepositoryFactory.create_repository_without_source_browser('hello')
-    first_commit = 'ca1ec263c4dfe2b592436a1c894288fe552c8348'
-    changesets = repository.next_changesets(first_commit, 2)
+    youngest_in_project = OpenStruct.new(:number => 2, :identifier => 'b5ad6f93ec7252f8acd40a954451f3c25615a699')
+
+    # GitClient.logging_enabled = true
+    changesets = repository.next_changesets(youngest_in_project, 2)
+    # p changesets.collect(&:commit_id)
+    assert_equal [3, 4], changesets.collect(&:number)
+    
     assert_equal 2, changesets.size
-    assert_equal '23f49e83ecbd82c1dd4884a514a07bd992e102be', changesets[0].commit_id
-    assert_equal 'b5ad6f93ec7252f8acd40a954451f3c25615a699', changesets[1].commit_id
+    assert_equal '8cf18930f5c6f457cec89011dfe45d8aff07d870', changesets[0].commit_id
+    assert_equal '9f953d7cfd6eff8f79e5e383e7bca4b0cf89e13a', changesets[1].commit_id
   end
 
 

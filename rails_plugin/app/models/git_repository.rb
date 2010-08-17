@@ -31,14 +31,20 @@ class GitRepository
     return [] if empty?
     head = @git_client.log_for_rev('head')
     return [] if skip_up_to && skip_up_to == head[:commit_id]
+    
+    to = 'head'
+    from = skip_up_to ? skip_up_to.identifier : nil
 
-    from = 'head' if skip_up_to.nil?
-    to = '' if skip_up_to.nil?
-
-    start_index = 0 if skip_up_to.nil?
-    start_index = 1 unless skip_up_to.nil?
-    log_entries = @git_client.log_for_revs(from, to).reverse
-    log_entries[start_index, limit].map{|log_entry| construct_changeset(log_entry)}
+    log_entries = @git_client.log_for_revs(from, to)
+    
+    last_number = skip_up_to ? skip_up_to.number+1 : 0
+  
+    log_entries[0..(limit - 1)].map do |log_entry|
+      changeset = construct_changeset(log_entry)
+      changeset.number = last_number
+      last_number += 1
+      changeset
+    end
   end
 
   alias :next_revisions :next_changesets
