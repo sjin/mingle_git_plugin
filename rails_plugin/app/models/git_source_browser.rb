@@ -16,23 +16,16 @@ class GitSourceBrowser
   end
 
   def node(path, commit_id)
-    tree = @git_client.ls_tree(path, commit_id)
-    
-    if (tree.size == 1)
-      create_node(tree.values.first, path, commit_id)
-    else
-      children = tree.map{|child_path, child| create_node(child, child_path, commit_id)}
-      DirNode.new(path, commit_id, children)
-    end
+    @git_client.dir?(path, commit_id) ? DirNode.new(path, commit_id, @git_client) : FileNode.new(path, commit_id, @git_client)
   end
 
-  def head_node(path, commit_id)
-    Node.new(path, commit_id)
-  end
-  
-  def raw_file_cache_content(commit_id)
-    @git_client.ls_tree(commit_id)
-  end
+  # def head_node(path, commit_id)
+  #   Node.new(path, commit_id)
+  # end
+  # 
+  # def raw_file_cache_content(commit_id)
+  #   @git_client.ls_tree(commit_id)
+  # end
   
   private
   
@@ -50,15 +43,16 @@ class GitSourceBrowser
   
 end
 
-
 class Node
 
   attr_reader :path
   attr_reader :commit_id
+  attr_reader :git_client
 
-  def initialize(path, commit_id)
+  def initialize(path, commit_id, git_client)
     @path = path.gsub(/\/$/, '')
     @commit_id = commit_id
+    @git_client = git_client
   end
   
   def name
@@ -99,12 +93,11 @@ class Node
 end
 
 class DirNode < Node
-  attr_reader :children
-  
-  def initialize(path, commit_id, children)
-    super(path, commit_id)
-    # raise 'foo' if children.empty?
-    @children = children
+
+  def children
+    git_client.ls_tree(path, commit_id, true).collect do |child_path, desc|
+      desc[:type] == :tree ? DirNode.new(child_path, commit_id, git_client) : FileNode.new(child_path, commit_id, git_client)
+    end
   end
   
   def dir?
@@ -119,14 +112,8 @@ end
 
 class FileNode < Node
   
-  def initialize(path, commit_id, object_id, git_client)
-    super(path, commit_id)
-    @object_id = object_id
-    @git_client = git_client
-  end
-  
   def file_contents(io)
-    @git_client.cat(path, @object_id, io)
+    @git_client.cat(path, git_object_id, io)
   end
   
   def dir?
@@ -135,5 +122,11 @@ class FileNode < Node
   
   def binary?
     false
+  end
+  
+  private
+  def git_object_id
+    tree = git_client.ls_tree(path, commit_id)
+    tree[path][:object_id]
   end
 end

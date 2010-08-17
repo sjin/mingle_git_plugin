@@ -128,42 +128,6 @@ require 'fileutils'
 
     end
 
-    # return a hash containing the file path and the
-    def ls_tree(path, commit_id)
-      tree = {}
-
-      command = "cd #{@clone_path} && /opt/local/bin/git --no-pager ls-tree #{commit_id} #{path}"
-      
-      execute(command) do |stdin, stdout, stderr|
-        stdin.close
-        stdout.each_line do |line|
-          mode, type, object_id, path = line.split(/\s+/)
-          type = type.to_sym
-          path += '/' if type == :tree
-          
-          tree[path] = {:type => type, :object_id => object_id}
-        end
-      end
-      
-      if dir?(tree)
-        tree = {}
-        
-        command = "cd #{@clone_path} && /opt/local/bin/git --no-pager ls-tree #{commit_id} #{path}"
-
-        execute(command) do |stdin, stdout, stderr|
-          stdin.close
-          stdout.each_line do |line|
-            mode, type, object_id, path = line.split(/\s+/)
-            type = type.to_sym
-            path += '/' if type == :tree
-
-            tree[path] = {:type => type, :object_id => object_id}
-          end
-        end
-      end
-      tree
-    end
-
     def cat(path, object_id, io)
       command = "cd #{@clone_path} && /opt/local/bin/git --no-pager cat-file blob #{object_id}"
 
@@ -173,11 +137,42 @@ require 'fileutils'
       end
     end
 
+    #FIXME: handle root_path? scenario in ls_tree instead of in dir?
+    def dir?(path, commit_id)
+      return true if root_path?(path)
+      tree = ls_tree(path, commit_id)
+      (tree.size == 1) && (tree[path][:type] == :tree)
+    end
+    
+
+    def ls_tree(path, commit_id, children = false)
+      tree = {}
+      path += '/' if children && !root_path?(path)
+      
+      command = "cd #{@clone_path} && /opt/local/bin/git --no-pager ls-tree #{commit_id} #{path}"
+      
+      error = ''
+
+      execute(command) do |stdin, stdout, stderr|
+        stdin.close
+        error = stderr.readlines
+        stdout.each_line do |line|
+          mode, type, object_id, path = line.split(/\s+/)
+          type = type.to_sym
+          # path += '/' if type == :tree
+          
+          tree[path] = {:type => type, :object_id => object_id}
+        end
+      end
+
+      raise StandardError.new("Could not execute '#{command}'. The error was:\n#{error}" ) unless error.empty?
+      tree
+    end
+    
     private
     
-    private 
-    def dir?(tree)
-      tree.size == 1 && tree.values.first[:type] == :tree
+    def root_path?(path)
+      path == '.' || path.blank?
     end
     
     def execute(command, &block)
