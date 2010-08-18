@@ -24,31 +24,15 @@ require 'fileutils'
     end
     
     def pull
-      command = "cd #{@clone_path} && /opt/local/bin/git --no-pager fetch -q"
-      
-      error = ''
-      execute(command) do |stdin, stdout, stderr|
-        stdin.close
-        error = stderr.readlines
-      end
-      
-      raise StandardError.new("Could not execute '#{command}'. The error was:\n#{error}" ) unless error.empty?
+      execute("cd #{@clone_path} && /opt/local/bin/git --no-pager fetch -q")
     end
 
     def ensure_local_clone
       base_dir = File.dirname(@clone_path)
-      FileUtils.mkdir_p(base_dir)
+      FileUtils.mkdir_p(base_dir, :verbose => false)
       head_file = @clone_path + '/HEAD'
       unless File.file?(head_file)
-        command = "cd #{base_dir} && /opt/local/bin/git --no-pager clone --bare #{@master_path}"
-        error = ''
-        execute(command) do |stdin, stdout, stderr|
-          stdin.close
-          error = stderr.readlines
-        end
-
-        raise StandardError.new("Could not execute '#{command}'. The error was:\n#{error}" ) unless error.empty?
-
+        execute("cd #{base_dir} && /opt/local/bin/git --no-pager clone --bare #{@master_path}")
       end
     end
 
@@ -76,9 +60,8 @@ require 'fileutils'
     def git_patch_for(commit_id, git_patch)
       command = "cd #{@clone_path} && /opt/local/bin/git --no-pager log -1 -p #{commit_id} -M"
 
-      error = ''
-      execute(command) do |stdin, stdout, stderr|
-        stdin.close
+      execute(command) do |stdout|
+        
         keep_globbing = true
         stdout.each_line do |line|
           # keep eating away all content until we find the actual diff
@@ -88,8 +71,6 @@ require 'fileutils'
 
         end
       end
-
-      raise StandardError.new("Could not execute '#{command}'. The error was:\n#{error}" ) unless error.empty?
 
       git_patch.done_adding_lines
     end
@@ -101,8 +82,8 @@ require 'fileutils'
     def cat(path, object_id, io)
       command = "cd #{@clone_path} && /opt/local/bin/git --no-pager cat-file blob #{object_id}"
 
-      execute(command) do |stdin, stdout, stderr|
-        stdin.close
+      execute(command) do |stdout|
+        
         io << stdout.read
       end
     end
@@ -119,13 +100,7 @@ require 'fileutils'
       tree = {}
       path += '/' if children && !root_path?(path)
       
-      command = "cd #{@clone_path} && /opt/local/bin/git --no-pager ls-tree #{commit_id} #{path}"
-      
-      error = ''
-
-      execute(command) do |stdin, stdout, stderr|
-        stdin.close
-        error = stderr.readlines
+      execute("cd #{@clone_path} && /opt/local/bin/git --no-pager ls-tree #{commit_id} #{path}") do |stdout|
         stdout.each_line do |line|
           mode, type, object_id, path = line.split(/\s+/)
           type = type.to_sym
@@ -133,15 +108,12 @@ require 'fileutils'
         end
       end
       
-      
       paths = tree.keys
       
       log_for_path(commit_id, *paths).each_with_index do |log_entry, i|
         tree[paths[i]][:last_log_entry] = log_entry
       end
-      
 
-      raise StandardError.new("Could not execute '#{command}'. The error was:\n#{error}" ) unless error.empty?
       tree
     end
     
@@ -153,8 +125,15 @@ require 'fileutils'
     
     def execute(command, &block)
       puts "Executing command:\n#{command}" if GitClient.logging_enabled
-      # puts "Executing command:\n#{command}\n Called from #{caller}" if GitClient.logging_enabled
-      Open3.popen3(command, &block)
+
+      error = nil
+      Open3.popen3(command) do |stdin, stdout, stderr|
+        stdin.close
+        yield(stdout) if block_given?
+        error = stderr.readlines
+      end
+      
+      raise StandardError.new("Could not execute '#{command}'. The error was:\n#{error}" ) unless error.empty?
     end
     
     
@@ -163,11 +142,8 @@ require 'fileutils'
       
       result = []
 
-      error = ''
-      execute(command) do |stdin, stdout, stderr|
-        stdin.close
+      execute(command) do |stdout|
         log_entry = {}
-        error = stderr.readlines
         stdout.each_line do |line|
           line.strip!
           if line.starts_with?('commit')
@@ -183,9 +159,9 @@ require 'fileutils'
             log_entry[:description] << line
           end
         end
+        
       end
 
-      raise StandardError.new("Could not execute '#{command}'. The error was:\n#{error}" ) unless error.empty?
 
       result
     end
