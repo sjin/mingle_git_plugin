@@ -19,6 +19,11 @@ class GitRepository
   # *returns*: the GitChangeset identified by treeish.  will work for commit_id,
   # short identifier, long identifier. raises error if changset does not exist.
   def changeset(commit_id)
+    if commit_id && commit_id !~ /^[a-zA-Z0-9]{40}$/ && !['head', 'master'].include?(commit_id.downcase) && Project.current
+      rev = Project.current.revisions.find_by_number(commit_id)
+      commit_id = rev.identifier if rev
+    end
+      
     construct_changeset(@git_client.log_for_rev(commit_id))
   end
 
@@ -65,11 +70,7 @@ class GitRepository
     end
 
     begin
-      if changeset_identifier == 'head'
-        @source_browser.head_node(path, proper_changeset.commit_id)
-      else
-        @source_browser.node(path, proper_changeset.commit_id)
-      end
+      @source_browser.node(path, proper_changeset.commit_id)
     rescue StandardError => e
       ActiveRecord::Base.logger.warn(%{
            GitRepository unable to build node for changeset #{changeset_identifier}.

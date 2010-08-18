@@ -78,6 +78,11 @@ class Project
   def identifier
     "test_project"
   end
+  
+  def self.current
+    nil
+  end
+  
 end
 
 # PasswordEncryption is a direct copy of Mingle source that allows for the existing
@@ -111,7 +116,7 @@ class TestRepositoryFactory
       factory = TestRepositoryFactory.new(bundle, options)
       factory.unbundle
 
-      GitClient.new(nil, factory.dir, nil)
+      GitClient.new(nil, factory.bare_repo_dir, nil)
     end
 
     def create_repository_without_source_browser(bundle = nil, options = {})
@@ -122,21 +127,13 @@ class TestRepositoryFactory
       factory = TestRepositoryFactory.new(bundle, options)
       factory.unbundle
 
-
       style_dir = File.expand_path("#{File.dirname(__FILE__)}/../app/templates")
-      git_client = GitClient.new('', factory.dir, style_dir)
-
+      git_client = GitClient.new('', factory.bare_repo_dir, style_dir)
 
       source_browser = GitSourceBrowser.new(
               git_client,
-              factory.source_browser_cache_path,
               options[:stub_mingle_revision_repository] || NoOpMingleRevisionRepository.new
       )
-      source_browser.instance_variable_set(:@__cache_path, factory.source_browser_cache_path)
-
-      def source_browser.cache_path
-        @__cache_path
-      end
 
       repository = GitRepository.new(git_client, source_browser)
       [repository, source_browser]
@@ -150,66 +147,57 @@ class TestRepositoryFactory
   end
 
   def unbundle
-    rm_rf(dir)
-    mkdir_p(dir)
-    if !File.exist?(File.join(dir, '.git'))
-      git_init
-      if @bundle
-        FileUtils.cp(bundle_path, dir + '/..')
-        extract_bundle("#{@bundle}.git.zip")
-      end
+    if @bundle
+      sh "rm -rf #{bare_repo_dir} && mkdir -p #{repos_path} && cd #{repos_path} && unzip -q #{bundle_zip_path}"
     end
+  end
+  
+  def bare_repo_dir
+    File.expand_path("#{repos_path}/#{@bundle}.git")
+  end
+  
+  def repos_path
+    TEST_REPOS_TMP_DIR
+  end
+  
+  def bundle_zip_path
+    File.expand_path(File.join(File.dirname(__FILE__), "bundles/#{@bundle}.git.zip"))
   end
 
   def use_cached_source_browser_files?
     @options[:use_cached_source_browser_files].nil? || @options[:use_cached_source_browser_files] == true
   end
 
-  def dir
-    @repos_dir ||= repos_path
-  end
-
-  def bundle_path
-    File.join(File.dirname(__FILE__), 'bundles', "#{@bundle}.git.zip")
-  end
-
-  def source_browser_path_secret
-    @source_browser_path_secret ||= if @use_cached_source_browser_files
-      Digest::MD5.hexdigest(File.new(bundle_path).mtime.utc.to_s)
-    else
-      RandomString.size_32
-    end
-  end
-
-  def repos_path_secret
-    @repos_path_secret ||= Digest::MD5.hexdigest(File.new(bundle_path).mtime.utc.to_s)
-  end
-
-  def git_init
-    sh "cd #{dir} && /opt/local/bin/git init > /dev/null 2>&1 "
-  end
-
-  def extract_bundle(zip_file)
-    sh "rm -rf #{dir} && mkdir -p #{dir} && cd #{dir} && unzip -qo ../#{zip_file}"
-  end
-
-  def source_browser_cache_path
-    if (@bundle)
-      File.expand_path(File.join(File.dirname(__FILE__), '..', '..', 'tmp', 'test',
-                                 'test_source_browser_caches_from_bundles', @bundle, source_browser_path_secret))
-    else
-      File.expand_path(File.join(File.dirname(__FILE__), '..', '..', 'tmp', 'test',
-                                 'test_source_browser_caches_from_bundles', 'empty'))
-    end
-  end
-
-  def repos_path
-    if (@bundle)
-      File.expand_path(File.join(TEST_REPOS_TMP_DIR, @bundle, repos_path_secret))
-    else
-      File.expand_path(File.join(TEST_REPOS_TMP_DIR, 'empty'))
-    end
-  end
+  # def dir
+  #   @repos_dir ||= repos_path
+  # end
+  # 
+  # def bundle_path
+  #   File.join(File.dirname(__FILE__), 'bundles', "#{@bundle}.git.zip")
+  # end
+  # 
+  # def extract_bundle(zip_file)
+  #   puts "rm -rf #{dir} && mkdir -p #{dir} && cd #{dir} && unzip -qo ../#{zip_file}"
+  #   sh "rm -rf #{dir} && mkdir -p #{dir} && cd #{dir} && unzip -qo ../#{zip_file}"
+  # end
+  # 
+  # def source_browser_cache_path
+  #   if (@bundle)
+  #     File.expand_path(File.join(File.dirname(__FILE__), '..', '..', 'tmp', 'test',
+  #                                'test_source_browser_caches_from_bundles', @bundle))
+  #   else
+  #     File.expand_path(File.join(File.dirname(__FILE__), '..', '..', 'tmp', 'test',
+  #                                'test_source_browser_caches_from_bundles', 'empty'))
+  #   end
+  # end
+  # 
+  # def repos_path
+  #   if (@bundle)
+  #     File.expand_path(File.join(TEST_REPOS_TMP_DIR))
+  #   else
+  #     File.expand_path(File.join(TEST_REPOS_TMP_DIR, 'empty'))
+  #   end
+  # end
 
 end
 

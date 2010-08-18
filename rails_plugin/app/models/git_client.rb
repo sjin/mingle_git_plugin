@@ -53,17 +53,7 @@ require 'fileutils'
     end
 
     def repository_empty?
-      command = "cd #{@clone_path} && /opt/local/bin/git --no-pager log -1"
-      result = ""
-      execute(command) do |stdin, stdout, stderr|
-        stdin.close
-        begin
-          result = stdout.readline
-        rescue Exception => e
-          # do nothing, maybe git barfed
-        end
-      end
-      return !result.starts_with?('commit')
+      Dir["#{@clone_path}/objects/pack/*"].empty?
     end
 
     def log_for_rev(rev)
@@ -113,7 +103,7 @@ require 'fileutils'
         stdout.each_line do |line|
           # keep eating away all content until we find the actual diff
           (keep_globbing = false) if line.starts_with?('diff')
-
+          line.chomp!
           git_patch.add_line(line) unless (keep_globbing || line.starts_with?('similarity index '))
 
         end

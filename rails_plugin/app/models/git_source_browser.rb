@@ -2,30 +2,18 @@
 # Licenced under the Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0.txt)
 
 class GitSourceBrowser
-  def initialize(git_client, cache_path, mingle_revision_repository)
+  def initialize(git_client, mingle_revision_repository)
     @git_client = git_client
-    @cache_path = cache_path
     @mingle_revision_repository = mingle_revision_repository
   end
 
   def ensure_file_cache_synched_for(changeset_identifier = nil)
-
   end
   
-  def tip_node
-  end
 
   def node(path, commit_id)
     @git_client.dir?(path, commit_id) ? DirNode.new(path, commit_id, @git_client) : FileNode.new(path, commit_id, @git_client)
   end
-
-  # def head_node(path, commit_id)
-  #   Node.new(path, commit_id)
-  # end
-  # 
-  # def raw_file_cache_content(commit_id)
-  #   @git_client.ls_tree(commit_id)
-  # end
   
   private
   

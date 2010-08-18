@@ -5,8 +5,6 @@ require File.expand_path(File.join(File.dirname(__FILE__), '..', 'test_helper'))
 
 class GitClientTest < Test::Unit::TestCase
   
-  # GitClient.logging_enabled = true
-      
   def test_should_get_log_for_one_revision
     git_client = TestRepositoryFactory.create_client_from_bundle('hello')
     

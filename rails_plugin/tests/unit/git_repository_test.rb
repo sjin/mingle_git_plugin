@@ -15,7 +15,6 @@ class GitRepositoryTest < Test::Unit::TestCase
     assert !repository.empty?
   end
 
-
   def test_changeset_raises_error_when_repository_is_empty
     repository = TestRepositoryFactory.create_repository_without_source_browser(nil)
     begin
@@ -78,9 +77,8 @@ class GitRepositoryTest < Test::Unit::TestCase
     repository = TestRepositoryFactory.create_repository_without_source_browser('hello')
     youngest_in_project = OpenStruct.new(:number => 2, :identifier => 'b5ad6f93ec7252f8acd40a954451f3c25615a699')
 
-    # GitClient.logging_enabled = true
     changesets = repository.next_changesets(youngest_in_project, 2)
-    # p changesets.collect(&:commit_id)
+
     assert_equal [3, 4], changesets.collect(&:number)
     
     assert_equal 2, changesets.size
@@ -135,7 +133,6 @@ class GitRepositoryTest < Test::Unit::TestCase
     end
   end
 
-
   # todo: introduce mocks, remove dependency on actual source browser(s)
   def test_node_for_head_and_tip_in_all_casings_will_return_tip_changeset
     repository, source_browser = TestRepositoryFactory.create_repository_with_source_browser('one_add')
@@ -147,25 +144,6 @@ class GitRepositoryTest < Test::Unit::TestCase
     end
   end
 
-
-  # todo: introduce mocks, remove dependency on actual source browser(s)
-  def test_node_uses_source_browser_tip_node_method_when_tip_is_requested
-    repository, source_browser = TestRepositoryFactory.create_repository_with_source_browser('one_add')
-    source_browser.ensure_file_cache_synched_for('0e2388def75b167b2baec22cf8ad3b3162aa13ad')
-    source_browser.ensure_file_cache_synched_for('63589c09db884b294626e95f9063027babe93f62')
-
-    def source_browser.tip_node(path, commit_id)
-      @calling_node_now_ok = true
-      super
-    end
-
-    def source_browser.node(path, commit_id)
-      raise "sorry, wrong method was used." unless @calling_node_now_ok
-      super
-    end
-
-    assert_equal 'e036967054a4f0ad0736c354053bcd27c2d6cb12', repository.node('', 'head').commit_id
-  end
 
   #
   # # todo: introduce mocks, remove dependency on actual source browser

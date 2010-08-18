@@ -47,4 +47,6 @@ class GitChangeset
       GitChange.new(git_change, changeset_index)
     end
   end
+  
+  alias :changed_paths :changes
 end

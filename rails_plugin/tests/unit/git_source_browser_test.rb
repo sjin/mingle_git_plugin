@@ -104,9 +104,7 @@ class GitSourceBrowserTest < Test::Unit::TestCase
   def test_node_returns_dir_node_for_dir_path
     setup_repos('one_changeset_with_subdirs')
     synch_source_browser_up_to(@source_browser, 0)
-    GitClient.logging_enabled = true
     node = @source_browser.node('src', "58eec0e41c32000f90dfa7c8f18d0391b4165013")
-    p node
     assert node.dir?
   end
   
@@ -168,7 +166,6 @@ class GitSourceBrowserTest < Test::Unit::TestCase
     setup_repos('two_changesets_with_many_files')
     synch_source_browser_up_to(@source_browser, 1)
 
-    # GitClient.logging_enabled = true    
     dir = @source_browser.node('.', "266e42ded6dcbaeac3dff370effe2ab0c33a9c09")
     children = dir.children
     foo_rb_file = children.find{|c| c.path == 'src'}

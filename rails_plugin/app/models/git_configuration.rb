@@ -77,12 +77,11 @@ class GitConfiguration < ActiveRecord::Base
     # the location for templates that renders the repo in mingle
     style_dir = File.expand_path("#{File.dirname(__FILE__)}/../templates")
     
-    source_browser_cache_path = File.expand_path(File.join(MINGLE_DATA_DIR, 'git', id.to_s, 'source_browser_cache'))
     mingle_rev_repos = GitMingleRevisionRepository.new(project)
     
     scm_client = GitClient.new(repository_path_with_userinfo, clone_path, style_dir)
     
-    source_browser = GitSourceBrowser.new(scm_client, source_browser_cache_path, mingle_rev_repos)
+    source_browser = GitSourceBrowser.new(scm_client, mingle_rev_repos)
     
     repository = GitRepository.new(scm_client, source_browser)
     GitRepositoryClone.new(GitSourceBrowserSynch.new(repository, source_browser))
