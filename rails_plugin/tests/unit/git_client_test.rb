@@ -46,7 +46,7 @@ class GitClientTest < Test::Unit::TestCase
     assert_equal [], git_client.log_for_revs('b5ad6f93ec7252f8acd40a954451f3c25615a699', 'b5ad6f93ec7252f8acd40a954451f3c25615a699')
   end
   
-  def test_case_name
+  def test_get_log_from_first_revision
     git_client = TestRepositoryFactory.create_client_from_bundle('hello')
     
     log_entries = git_client.log_for_revs(nil, 'head')
@@ -59,4 +59,45 @@ class GitClientTest < Test::Unit::TestCase
     git_client = TestRepositoryFactory.create_client_from_bundle('one_changeset')
     assert_equal '19df35cdb7d0219cb2b1adfe791d7b27bf14fda8', git_client.log_for_rev('head')[:commit_id]
   end
+  
+  def test_should_get_most_log_entry_about_path
+    git_client = TestRepositoryFactory.create_client_from_bundle('hello')
+    
+    log_entries = git_client.log_for_path('9f953d7cfd6eff8f79e5e383e7bca4b0cf89e13a', 'hello.c')
+    
+    log_entry = log_entries.first
+    assert_equal 1, log_entries.size
+    assert_equal '9f953d7cfd6eff8f79e5e383e7bca4b0cf89e13a', log_entry[:commit_id]
+    assert_equal "Bryan O'Sullivan <bos@serpentine.com>", log_entry[:author]
+    assert_equal "Trim comments.", log_entry[:description]
+    
+    
+    log_entries = git_client.log_for_path('8cf18930f5c6f457cec89011dfe45d8aff07d870', 'hello.c')
+    
+    log_entry = log_entries.first
+    assert_equal 1, log_entries.size
+    assert_equal 'b5ad6f93ec7252f8acd40a954451f3c25615a699', log_entry[:commit_id]
+    assert_equal "Bryan O'Sullivan <bos@serpentine.com>", log_entry[:author]
+    assert_equal "Introduce a typo into hello.c.", log_entry[:description]
+  end
+  
+  def test_ls_tree_can_list_all_children_at_root_node
+    git_client = TestRepositoryFactory.create_client_from_bundle("one_changeset_with_subdirs")
+    
+    assert_equal ['src', 'tests'].sort, git_client.ls_tree("", "master", true).keys.sort
+    assert_equal ['src', 'tests'].sort, git_client.ls_tree("", "master", true).keys.sort
+    assert_equal ['src/foo.rb'].sort, git_client.ls_tree("src", "head", true).keys.sort
+  end
+  
+  def test_ls_tree_can_list_all_children_at_any_revision_node
+    git_client = TestRepositoryFactory.create_client_from_bundle("hello")
+    
+    assert_equal ['hello.c', 'Makefile'].sort, git_client.ls_tree("", "9f953d7cfd6eff8f79e5e383e7bca4b0cf89e13a", true).keys.sort
+    assert_equal ['hello.c'], git_client.ls_tree("", "2cf7a6a5e25f022ac4b18ce7165661cdc8177013", true).keys
+  end
+  
+  def test_ls_tree_should_contain_last_log_entry_for_each_child
+    
+  end
+  
 end

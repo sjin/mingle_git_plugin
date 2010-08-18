@@ -61,36 +61,12 @@ require 'fileutils'
     end
 
     def log_for_revs(from, to)
-      raise "Repository is empty!" if repository_empty?
       window = from.blank? ? to : "#{from}..#{to}"
-      command = "cd #{@clone_path} && /opt/local/bin/git --no-pager log --reverse #{window}"
-      result = []
+      git_log("cd #{@clone_path} && /opt/local/bin/git --no-pager log --reverse #{window}")
+    end
 
-      error = ''
-      execute(command) do |stdin, stdout, stderr|
-        stdin.close
-        log_entry = {}
-        error = stderr.readlines
-        stdout.each_line do |line|
-          line.strip!
-          if line.starts_with?('commit')
-            log_entry = {}
-            log_entry[:commit_id] = line.sub(/commit /, '')
-            log_entry[:description] = ''
-            result << log_entry
-          elsif line.starts_with?('Author:')
-            log_entry[:author] = line.sub(/Author: /, '')
-          elsif line.starts_with?('Date:')
-            log_entry[:time] = Time.parse(line.sub(/Date:   /, ''))
-          else
-            log_entry[:description] << line
-          end
-        end
-      end
-
-      raise StandardError.new("Could not execute '#{command}'. The error was:\n#{error}" ) unless error.empty?
-
-      result
+    def log_for_path(at_commit_id, path)
+      git_log("cd #{@clone_path} && /opt/local/bin/git --no-pager log #{at_commit_id} -1 -- #{path}")
     end
 
     def git_patch_for(commit_id, git_patch)
@@ -149,11 +125,10 @@ require 'fileutils'
         stdout.each_line do |line|
           mode, type, object_id, path = line.split(/\s+/)
           type = type.to_sym
-          # path += '/' if type == :tree
-          
           tree[path] = {:type => type, :object_id => object_id}
         end
       end
+      
 
       raise StandardError.new("Could not execute '#{command}'. The error was:\n#{error}" ) unless error.empty?
       tree
@@ -166,8 +141,42 @@ require 'fileutils'
     end
     
     def execute(command, &block)
-      puts "Executing command:\n#{command}\n Called from #{caller}" if GitClient.logging_enabled
+      puts "Executing command:\n#{command}" if GitClient.logging_enabled
+      # puts "Executing command:\n#{command}\n Called from #{caller}" if GitClient.logging_enabled
       Open3.popen3(command, &block)
+    end
+    
+    
+    def git_log(command)
+      raise "Repository is empty!" if repository_empty?
+      
+      result = []
+
+      error = ''
+      execute(command) do |stdin, stdout, stderr|
+        stdin.close
+        log_entry = {}
+        error = stderr.readlines
+        stdout.each_line do |line|
+          line.strip!
+          if line.starts_with?('commit')
+            log_entry = {}
+            log_entry[:commit_id] = line.sub(/commit /, '')
+            log_entry[:description] = ''
+            result << log_entry
+          elsif line.starts_with?('Author:')
+            log_entry[:author] = line.sub(/Author: /, '')
+          elsif line.starts_with?('Date:')
+            log_entry[:time] = Time.parse(line.sub(/Date:   /, ''))
+          else
+            log_entry[:description] << line
+          end
+        end
+      end
+
+      raise StandardError.new("Could not execute '#{command}'. The error was:\n#{error}" ) unless error.empty?
+
+      result
     end
   end
 # 

@@ -136,9 +136,6 @@ class GitRepositoryTest < Test::Unit::TestCase
   # todo: introduce mocks, remove dependency on actual source browser(s)
   def test_node_for_head_and_tip_in_all_casings_will_return_tip_changeset
     repository, source_browser = TestRepositoryFactory.create_repository_with_source_browser('one_add')
-    source_browser.ensure_file_cache_synched_for('0e2388def75b167b2baec22cf8ad3b3162aa13ad')
-    source_browser.ensure_file_cache_synched_for('63589c09db884b294626e95f9063027babe93f62')
-
     ['MASTER', 'master', 'head', 'HEAD'].each do |changeset|
       assert_equal 'e036967054a4f0ad0736c354053bcd27c2d6cb12', repository.node('', changeset).commit_id
     end

@@ -7,12 +7,11 @@ class GitSourceBrowser
     @mingle_revision_repository = mingle_revision_repository
   end
 
-  def ensure_file_cache_synched_for(changeset_identifier = nil)
-  end
-  
 
   def node(path, commit_id)
-    @git_client.dir?(path, commit_id) ? DirNode.new(path, commit_id, @git_client) : FileNode.new(path, commit_id, @git_client)
+    is_dir = @git_client.dir?(path, commit_id)
+    last_log_entry = @git_client.log_for_path(commit_id, path).first
+    is_dir ? DirNode.new(path, commit_id, @git_client, last_log_entry) : FileNode.new(path, commit_id, @git_client, last_log_entry)
   end
   
   private
@@ -37,10 +36,11 @@ class Node
   attr_reader :commit_id
   attr_reader :git_client
 
-  def initialize(path, commit_id, git_client)
+  def initialize(path, commit_id, git_client, last_log_entry)
     @path = path.gsub(/\/$/, '')
     @commit_id = commit_id
     @git_client = git_client
+    @last_log_entry = last_log_entry
   end
   
   def name
@@ -56,19 +56,19 @@ class Node
   end
   
   def most_recent_committer
-    'committer'
+    @last_log_entry[:author]
   end
   
   def most_recent_commit_time
-    Time.new
+    @last_log_entry[:time]
   end
   
   def most_recent_commit_desc
-    'last commit desc'
+    @last_log_entry[:description]
   end
   
   def most_recent_changeset_identifier
-    'changeset_identifier'
+    @last_log_entry[:commit_id]
   end
   
   def parent_path_components
@@ -84,7 +84,7 @@ class DirNode < Node
 
   def children
     git_client.ls_tree(path, commit_id, true).collect do |child_path, desc|
-      desc[:type] == :tree ? DirNode.new(child_path, commit_id, git_client) : FileNode.new(child_path, commit_id, git_client)
+      desc[:type] == :tree ? DirNode.new(child_path, commit_id, git_client, desc[:last_changeset]) : FileNode.new(child_path, commit_id, git_client, desc[:last_changeset])
     end
   end
   
