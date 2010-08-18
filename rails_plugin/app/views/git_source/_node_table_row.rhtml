@@ -17,7 +17,7 @@
 	<% end -%>
 	<td><%= link_to "#{GitChangeset.short_identifier(node.most_recent_changeset_identifier)}...", changeset_url(:rev => node.most_recent_changeset_identifier) %></td>
 	<% if node.most_recent_commit_desc -%>
-	  <td><%= replace_card_links(h(truncate(node.most_recent_commit_desc, 255))) %></td>
+	  <td><%= replace_card_links(h(truncate(node.most_recent_commit_desc, :length => 255))) %></td>
 	<% else -%>
 	  <td>Still caching...</td>
 	<% end -%>
