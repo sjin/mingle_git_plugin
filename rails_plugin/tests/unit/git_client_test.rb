@@ -81,6 +81,24 @@ class GitClientTest < Test::Unit::TestCase
     assert_equal "Introduce a typo into hello.c.", log_entry[:description]
   end
   
+  def test_should_get_most_log_entry_about_multiple_path
+    git_client = TestRepositoryFactory.create_client_from_bundle('hello')
+    
+    log_entries = git_client.log_for_path('9f953d7cfd6eff8f79e5e383e7bca4b0cf89e13a', 'hello.c', 'Makefile')
+    assert_equal 2, log_entries.size
+    
+    log_entry = log_entries.first
+    
+    assert_equal '9f953d7cfd6eff8f79e5e383e7bca4b0cf89e13a', log_entry[:commit_id]
+    assert_equal "Bryan O'Sullivan <bos@serpentine.com>", log_entry[:author]
+    assert_equal "Trim comments.", log_entry[:description]
+    
+    log_entry = log_entries.last
+    assert_equal '8cf18930f5c6f457cec89011dfe45d8aff07d870', log_entry[:commit_id]
+    assert_equal "Bryan O'Sullivan <bos@serpentine.com>", log_entry[:author]
+    assert_equal "Get make to generate the final binary from a .o file.", log_entry[:description]
+  end
+  
   def test_ls_tree_can_list_all_children_at_root_node
     git_client = TestRepositoryFactory.create_client_from_bundle("one_changeset_with_subdirs")
     

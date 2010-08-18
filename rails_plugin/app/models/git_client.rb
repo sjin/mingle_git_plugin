@@ -65,8 +65,12 @@ require 'fileutils'
       git_log("cd #{@clone_path} && /opt/local/bin/git --no-pager log --reverse #{window}")
     end
 
-    def log_for_path(at_commit_id, path)
-      git_log("cd #{@clone_path} && /opt/local/bin/git --no-pager log #{at_commit_id} -1 -- #{path}")
+    def log_for_path(at_commit_id, *paths)
+      cmds = paths.inject(["cd #{@clone_path}"]) do |result, path|
+        result << "/opt/local/bin/git --no-pager log #{at_commit_id} -1 -- '#{path}'"
+      end
+      
+      git_log(cmds.join(" && "))
     end
 
     def git_patch_for(commit_id, git_patch)
@@ -129,8 +133,11 @@ require 'fileutils'
         end
       end
       
-      tree.each do |path, entry|
-        entry[:last_log_entry] = log_for_path(commit_id, path).first
+      
+      paths = tree.keys
+      
+      log_for_path(commit_id, *paths).each_with_index do |log_entry, i|
+        tree[paths[i]][:last_log_entry] = log_entry
       end
       
 
