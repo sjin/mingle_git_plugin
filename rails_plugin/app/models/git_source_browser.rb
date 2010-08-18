@@ -84,7 +84,7 @@ class DirNode < Node
 
   def children
     git_client.ls_tree(path, commit_id, true).collect do |child_path, desc|
-      desc[:type] == :tree ? DirNode.new(child_path, commit_id, git_client, desc[:last_changeset]) : FileNode.new(child_path, commit_id, git_client, desc[:last_changeset])
+      desc[:type] == :tree ? DirNode.new(child_path, commit_id, git_client, desc[:last_log_entry]) : FileNode.new(child_path, commit_id, git_client, desc[:last_log_entry])
     end
   end
   

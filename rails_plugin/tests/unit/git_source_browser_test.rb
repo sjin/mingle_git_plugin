@@ -105,7 +105,7 @@ class GitSourceBrowserTest < Test::Unit::TestCase
   def test_node_returns_dir_node_for_root
     setup_repos('one_changeset')
     
-    assert @source_browser.node('.', "5bb588cbc98c0a4c46ea0fadea4092ec5c92afb4").dir?
+    assert @source_browser.node('.', "19df35cdb7d0219cb2b1adfe791d7b27bf14fda8").dir?
   end
   
   def test_can_get_children_of_root_node
@@ -157,13 +157,12 @@ class GitSourceBrowserTest < Test::Unit::TestCase
     hello_c_file = children.find{|c| c.path == 'hello.c'}
     assert_equal "Bryan O'Sullivan <bos@serpentine.com>", hello_c_file.most_recent_committer
     assert_equal "Introduce a typo into hello.c.", hello_c_file.most_recent_commit_desc
-    assert_equal "foo", hello_c_file.most_recent_commit_time
-
+    assert_equal Time.parse('Sat Aug 16 22:05:04 -0700 2008'), hello_c_file.most_recent_commit_time
     
     makefile = children.find{|c| c.path == 'Makefile'}
     assert_equal "Bryan O'Sullivan <bos@serpentine.com>", makefile.most_recent_committer
     assert_equal "Get make to generate the final binary from a .o file.", makefile.most_recent_commit_desc
-    assert_equal "foo", makefile.most_recent_commit_time
+    assert_equal Time.parse('Sat Aug 16 22:08:02 -0700 2008'), makefile.most_recent_commit_time
     
   end
   

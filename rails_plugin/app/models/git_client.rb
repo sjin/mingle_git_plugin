@@ -129,6 +129,10 @@ require 'fileutils'
         end
       end
       
+      tree.each do |path, entry|
+        entry[:last_log_entry] = log_for_path(commit_id, path).first
+      end
+      
 
       raise StandardError.new("Could not execute '#{command}'. The error was:\n#{error}" ) unless error.empty?
       tree
