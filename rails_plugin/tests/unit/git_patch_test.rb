@@ -94,10 +94,16 @@ class GitPatchTest < Test::Unit::TestCase
     # rename w/o mods should only be tested directly against repsitory
     repository = TestRepositoryFactory.create_repository_without_source_browser('renames')
     git_patch = repository.git_patch_for(repository.changeset('4f766d4cec90b06af340670183fbfb8acf5140ef'))
-    change = git_patch.changes.first
-    assert_equal 'WorstestEver.png', change.path
-    assert_equal 'WorstEver.png', change.renamed_from_path
-    assert_equal [:renamed], change.change_type
+    
+    changes = git_patch.changes.sort_by { |c| c.path }.reverse
+
+    assert_equal 'some_stuff.txt', changes.first.path
+    assert_equal 'stuff.txt', changes.first.renamed_from_path
+    assert_equal [:renamed], changes.first.change_type
+
+    assert_equal 'WorstestEver.png', changes.second.path
+    assert_equal 'WorstEver.png', changes.second.renamed_from_path
+    assert_equal [:renamed], changes.second.change_type
     # assert change.binary?
   end
 

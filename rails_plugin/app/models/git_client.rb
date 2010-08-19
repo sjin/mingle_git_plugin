@@ -29,7 +29,7 @@ require 'fileutils'
     end
 
     def ensure_local_clone
-      git("clone --bare '#{@master_path}' '#{@clone_path}'") unless File.file?(@clone_path + '/HEAD')
+      git("clone --bare \"#{@master_path}\" \"#{@clone_path}\"") unless File.file?(@clone_path + '/HEAD')
     end
 
     def repository_empty?
@@ -47,7 +47,7 @@ require 'fileutils'
 
     def log_for_path(at_commit_id, *paths)
       cmds = paths.collect do |path|
-        "log #{at_commit_id} -1 -- '#{path}'"
+        "log #{at_commit_id} -1 -- \"#{path}\""
       end
       
       git_log(cmds)
@@ -92,7 +92,7 @@ require 'fileutils'
       tree = {}
       path += '/' if children && !root_path?(path)
       
-      git("ls-tree #{commit_id} #{path}") do |stdout|
+      git("ls-tree #{commit_id} \"#{path}\"") do |stdout|
         stdout.each_line do |line|
           mode, type, object_id, path = line.split(/\s+/)
           type = type.to_sym
@@ -118,7 +118,7 @@ require 'fileutils'
     
     def git(command, &block)
       
-      git_prefix = "git --git-dir='#{@clone_path}' --no-pager"
+      git_prefix = "git --git-dir=\"#{@clone_path}\" --no-pager"
       
       if Array === command
         command = command.collect{ |cmd| "#{git_prefix}  #{cmd}" }.join(" && ")
@@ -146,7 +146,7 @@ require 'fileutils'
         puts "execute using #{time_in_ms}ms"
       end
       
-      raise StandardError.new("Could not execute '#{command}'. The error was:\n#{error}" ) unless error.empty?
+      raise StandardError.new("Could not execute \"#{command}\". The error was:\n#{error}" ) unless error.empty?
     end
     
     

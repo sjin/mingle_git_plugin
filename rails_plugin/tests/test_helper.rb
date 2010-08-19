@@ -152,9 +152,7 @@ class TestRepositoryFactory
       FileUtils.rm_rf bare_repo_dir
       FileUtils.mkdir_p repos_path
       
-      cd repos_path do
-        sh "unzip -q #{bundle_zip_path}"
-      end
+      `unzip#{Config::CONFIG['EXEEXT']} -q #{bundle_zip_path} -d #{repos_path}`
     end
   end
   
