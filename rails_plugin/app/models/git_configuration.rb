@@ -61,8 +61,6 @@ class GitConfiguration < ActiveRecord::Base
     clone_path = File.expand_path(File.join(MINGLE_DATA_DIR, "git", project.identifier))
     puts "clone_path: #{clone_path}"
     
-    mingle_rev_repos = GitMingleRevisionRepository.new(project)
-    
     scm_client = GitClient.new(repository_path_with_userinfo, clone_path)
     
     source_browser = GitSourceBrowser.new(scm_client)

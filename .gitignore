@@ -1,2 +1,3 @@
-/rails_plugin/tmp
-/out
+rails_plugin/reports
+rails_plugin/tmp
+rails_plugin/tmtags

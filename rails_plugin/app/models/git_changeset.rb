@@ -9,6 +9,12 @@ class GitChangeset
   attr_reader :author
   attr_reader :time
   attr_accessor :number
+  
+  class << self
+    def short_identifier(identifier)
+      identifier[0...12]
+    end
+  end
 
   def initialize(attributes, repository)
     @repository = repository
@@ -17,24 +23,6 @@ class GitChangeset
     end
   end
   
-  def identifier
-    commit_id
-  end
-  
-  def message
-    description
-  end
-  
-  def version_control_user
-    author
-  end
-
-  class << self
-    def short_identifier(identifier)
-      identifier[0...12]
-    end
-  end
-
   def changes
     return @__changes if @__changes
     changeset_index = 0
@@ -47,4 +35,7 @@ class GitChangeset
   end
   
   alias :changed_paths :changes
+  alias :identifier :commit_id
+  alias :message :description
+  alias :version_control_user :author
 end

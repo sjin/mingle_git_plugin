@@ -4,16 +4,29 @@
 require 'rake/testtask'
 require 'rake/rdoctask'
 
-include FileUtils
+begin
+  require 'rcov/rcovtask'
+rescue LoadError
+  raise 'Could not find the rcov gem, please run `gem install rcov` to get some metrics'
+end
 
 desc "run all unit tests"
-task :test do  
-  Rake::TestTask.new do |t|
-    rm_rf('tmp')
-    t.test_files = FileList['tests/unit/**/*_test.rb']
-    t.verbose = true
-  end
+Rcov::RcovTask.new(:test) do |t|
+  t.libs << "tests"
+  t.test_files = FileList['tests/unit/**/*_test.rb']
+  t.output_dir = "reports/coverage"
+  t.verbose = true
+  t.rcov_opts << '--exclude gems,tests'
+  t.rcov_opts << '--exclude "yaml,parser.y,racc,(erb),(eval),(recognize_optimized),erb"' if RUBY_PLATFORM =~ /java/
+  t.rcov_opts << '--include-file "app/.*\.rb"'
+  t.rcov_opts << ' --html'
 end
+
+task :open_report do
+  `open reports/coverage/index.html`
+end
+
+task :rcov => [:test, :open_report]
 
 desc "default task"
 task :default => [:test]

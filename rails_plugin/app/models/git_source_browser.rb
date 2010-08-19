@@ -12,21 +12,7 @@ class GitSourceBrowser
     last_log_entry = @git_client.log_for_path(commit_id, path).first
     is_dir ? DirNode.new(path, commit_id, @git_client, last_log_entry) : FileNode.new(path, commit_id, @git_client, last_log_entry)
   end
-  
-  private
-  
-  def dir?(tree)
-    tree.size == 1 && tree.first[:type] == :tree
-  end
-  
-  def create_node(child, path, commit_id)
-    if (child[:type] == :tree)
-      DirNode.new(path, commit_id, nil)
-    else
-      FileNode.new(path, commit_id, child[:object_id], @git_client)
-    end
-  end
-  
+ 
 end
 
 class Node
@@ -34,6 +20,7 @@ class Node
   attr_reader :path
   attr_reader :commit_id
   attr_reader :git_client
+  alias :display_path :path
 
   def initialize(path, commit_id, git_client, last_log_entry)
     @path = path.gsub(/\/$/, '')
@@ -44,10 +31,6 @@ class Node
   
   def name
     path.split('/').last
-  end
-  
-  def display_path
-    path
   end
   
   def path_components
