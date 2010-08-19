@@ -40,9 +40,9 @@ require 'fileutils'
       git_log("log #{rev} -1").first
     end
 
-    def log_for_revs(from, to)
+    def log_for_revs(from, to, limit=nil)
       window = from.blank? ? to : "#{from}..#{to}"
-      git_log("log #{window}").reverse
+      git_log("log #{window}", limit).reverse
     end
 
     def log_for_path(at_commit_id, *paths)
@@ -150,11 +150,10 @@ require 'fileutils'
     end
     
     
-    def git_log(command)
-      
+    def git_log(command, limit=nil)
       raise "Repository is empty!" if repository_empty?
       
-      result = []
+      result = limit ? Pipe.new(limit) : []
 
       git(command) do |stdout|
         log_entry = {}
@@ -177,7 +176,7 @@ require 'fileutils'
       end
 
 
-      result
+      result.to_a
     end
   end
 # 

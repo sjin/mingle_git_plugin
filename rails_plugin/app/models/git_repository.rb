@@ -40,11 +40,11 @@ class GitRepository
     to = 'head'
     from = skip_up_to ? skip_up_to.identifier : nil
 
-    log_entries = @git_client.log_for_revs(from, to)
-    
+    log_entries = @git_client.log_for_revs(from, to, limit)
+
     last_number = skip_up_to ? skip_up_to.number+1 : 0
-  
-    log_entries[0..(limit - 1)].map do |log_entry|
+
+    log_entries.map do |log_entry|
       changeset = construct_changeset(log_entry)
       changeset.number = last_number
       last_number += 1

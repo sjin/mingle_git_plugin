@@ -52,7 +52,17 @@ class GitClientTest < Test::Unit::TestCase
     log_entries = git_client.log_for_revs(nil, 'head')
     assert_equal 5, log_entries.size
     assert_equal '2cf7a6a5e25f022ac4b18ce7165661cdc8177013', log_entries.first[:commit_id]
+    assert_equal '23f49e83ecbd82c1dd4884a514a07bd992e102be', log_entries.second[:commit_id]
     assert_equal '9f953d7cfd6eff8f79e5e383e7bca4b0cf89e13a', log_entries.last[:commit_id]
+  end
+  
+  def test_get_log_with_limit
+    git_client = TestRepositoryFactory.create_client_from_bundle('hello')
+    
+    log_entries = git_client.log_for_revs(nil, 'head', 2)
+    assert_equal 2, log_entries.size
+    assert_equal '2cf7a6a5e25f022ac4b18ce7165661cdc8177013', log_entries.first[:commit_id]
+    assert_equal '23f49e83ecbd82c1dd4884a514a07bd992e102be', log_entries.second[:commit_id]
   end
   
   def test_can_build_log_entry_for_repo_with_single_revision
