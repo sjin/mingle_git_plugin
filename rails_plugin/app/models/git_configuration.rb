@@ -65,7 +65,7 @@ class GitConfiguration < ActiveRecord::Base
     
     scm_client = GitClient.new(repository_path_with_userinfo, clone_path)
     
-    source_browser = GitSourceBrowser.new(scm_client, mingle_rev_repos)
+    source_browser = GitSourceBrowser.new(scm_client)
     
     repository = GitRepository.new(scm_client, source_browser)
     GitRepositoryClone.new(repository)
