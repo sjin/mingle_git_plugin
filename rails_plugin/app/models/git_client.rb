@@ -16,6 +16,7 @@ require 'fileutils'
       if master_path && master_path =~ /\//
         @clone_path += '/' + master_path.split('/').last.gsub(/.git$/,'') + '.git'
       end
+      @clone_path = File.expand_path(@clone_path) if @clone_path
       @style_dir = style_dir
     end
 
@@ -24,16 +25,11 @@ require 'fileutils'
     end
     
     def pull
-      execute("cd #{@clone_path} && /opt/local/bin/git --no-pager fetch -q")
+      git("fetch -q")
     end
 
     def ensure_local_clone
-      base_dir = File.dirname(@clone_path)
-      FileUtils.mkdir_p(base_dir, :verbose => false)
-      head_file = @clone_path + '/HEAD'
-      unless File.file?(head_file)
-        execute("cd #{base_dir} && /opt/local/bin/git --no-pager clone --bare #{@master_path}")
-      end
+      git("clone --bare '#{@master_path}' '#{@clone_path}'") unless File.file?(@clone_path + '/HEAD')
     end
 
     def repository_empty?
@@ -41,26 +37,24 @@ require 'fileutils'
     end
 
     def log_for_rev(rev)
-      log_for_revs(nil, rev).last
+      git_log("log #{rev} -1").first
     end
 
     def log_for_revs(from, to)
       window = from.blank? ? to : "#{from}..#{to}"
-      git_log("cd #{@clone_path} && /opt/local/bin/git --no-pager log --reverse #{window}")
+      git_log("log #{window}").reverse
     end
 
     def log_for_path(at_commit_id, *paths)
-      cmds = paths.inject(["cd #{@clone_path}"]) do |result, path|
-        result << "/opt/local/bin/git --no-pager log #{at_commit_id} -1 -- '#{path}'"
+      cmds = paths.collect do |path|
+        "log #{at_commit_id} -1 -- '#{path}'"
       end
       
-      git_log(cmds.join(" && "))
+      git_log(cmds)
     end
 
     def git_patch_for(commit_id, git_patch)
-      command = "cd #{@clone_path} && /opt/local/bin/git --no-pager log -1 -p #{commit_id} -M"
-
-      execute(command) do |stdout|
+      git("log -1 -p #{commit_id} -M") do |stdout|
         
         keep_globbing = true
         stdout.each_line do |line|
@@ -80,9 +74,7 @@ require 'fileutils'
     end
 
     def cat(path, object_id, io)
-      command = "cd #{@clone_path} && /opt/local/bin/git --no-pager cat-file blob #{object_id}"
-
-      execute(command) do |stdout|
+      git("cat-file blob #{object_id}") do |stdout|
         
         io << stdout.read
       end
@@ -100,7 +92,7 @@ require 'fileutils'
       tree = {}
       path += '/' if children && !root_path?(path)
       
-      execute("cd #{@clone_path} && /opt/local/bin/git --no-pager ls-tree #{commit_id} #{path}") do |stdout|
+      git("ls-tree #{commit_id} #{path}") do |stdout|
         stdout.each_line do |line|
           mode, type, object_id, path = line.split(/\s+/)
           type = type.to_sym
@@ -123,14 +115,35 @@ require 'fileutils'
       path == '.' || path.blank?
     end
     
+    
+    def git(command, &block)
+      
+      git_prefix = "git --git-dir='#{@clone_path}' --no-pager"
+      
+      if Array === command
+        command = command.collect{ |cmd| "#{git_prefix}  #{cmd}" }.join(" && ")
+      else
+        command = "#{git_prefix}  #{command}"
+      end
+    
+      execute(command, &block)
+    end
+    
     def execute(command, &block)
+      start = Time.now
       puts "Executing command:\n#{command}" if GitClient.logging_enabled
 
       error = nil
+      
       Open3.popen3(command) do |stdin, stdout, stderr|
         stdin.close
         yield(stdout) if block_given?
         error = stderr.readlines
+      end
+      
+      if GitClient.logging_enabled
+        time_in_ms = ((Time.now - start)*1000).to_i
+        puts "execute using #{time_in_ms}ms"
       end
       
       raise StandardError.new("Could not execute '#{command}'. The error was:\n#{error}" ) unless error.empty?
@@ -138,11 +151,12 @@ require 'fileutils'
     
     
     def git_log(command)
+      
       raise "Repository is empty!" if repository_empty?
       
       result = []
 
-      execute(command) do |stdout|
+      git(command) do |stdout|
         log_entry = {}
         stdout.each_line do |line|
           line.strip!
