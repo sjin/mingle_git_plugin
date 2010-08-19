@@ -159,7 +159,7 @@ require 'fileutils'
       git(command) do |stdout|
         log_entry = {}
         stdout.each_line do |line|
-          line.strip!
+          line.chomp!
           if line.starts_with?('commit')
             log_entry = {}
             log_entry[:commit_id] = line.sub(/commit /, '')
@@ -170,7 +170,7 @@ require 'fileutils'
           elsif line.starts_with?('Date:')
             log_entry[:time] = Time.parse(line.sub(/Date:   /, ''))
           else
-            log_entry[:description] << line
+            log_entry[:description] << line.strip
           end
         end
         
