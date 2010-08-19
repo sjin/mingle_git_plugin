@@ -41,11 +41,14 @@ class GitChangeset
   # changeset, each containing detail required to render Mingle's Revision 'show'
   # page as well as to populate the source browser cache
   def changes
+    return @__changes if @__changes
     changeset_index = 0
-    @repository.git_patch_for(self).changes.map do |git_change|
+    @__changes = @repository.git_patch_for(self).changes.map do |git_change|
       changeset_index += 1
       GitChange.new(git_change, changeset_index)
     end
+    
+    @__changes
   end
   
   alias :changed_paths :changes
