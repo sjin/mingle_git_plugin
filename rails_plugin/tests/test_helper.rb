@@ -148,7 +148,13 @@ class TestRepositoryFactory
 
   def unbundle
     if @bundle
-      sh "rm -rf #{bare_repo_dir} && mkdir -p #{repos_path} && cd #{repos_path} && unzip -q #{bundle_zip_path}"
+      
+      FileUtils.rm_rf bare_repo_dir
+      FileUtils.mkdir_p repos_path
+      
+      cd repos_path do
+        sh "unzip -q #{bundle_zip_path}"
+      end
     end
   end
   
