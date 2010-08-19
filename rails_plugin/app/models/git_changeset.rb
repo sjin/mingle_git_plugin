@@ -31,15 +31,10 @@ class GitChangeset
 
   class << self
     def short_identifier(identifier)
-      # FIXME: just a hack to get things working.
-      identifier[0...12] unless identifier.empty?
+      identifier[0...12]
     end
   end
 
-
-  # *returns*: an array of GitChange, one for each path included in the
-  # changeset, each containing detail required to render Mingle's Revision 'show'
-  # page as well as to populate the source browser cache
   def changes
     return @__changes if @__changes
     changeset_index = 0

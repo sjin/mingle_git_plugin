@@ -105,7 +105,7 @@ class GitRepositoryTest < Test::Unit::TestCase
   end
 
   def test_will_only_pull_once
-    git_client = GitClient.new(nil, nil, nil)
+    git_client = GitClient.new(nil, nil)
 
     def git_client.pull
       @pull_count ||= 0

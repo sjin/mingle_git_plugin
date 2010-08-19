@@ -112,28 +112,24 @@ end
 class TestRepositoryFactory
   class << self
     
-    def create_client_from_bundle(bundle = nil, options={})
-      factory = TestRepositoryFactory.new(bundle, options)
+    def create_client_from_bundle(bundle = nil)
+      factory = TestRepositoryFactory.new(bundle)
       factory.unbundle
 
-      GitClient.new(nil, factory.bare_repo_dir, nil)
+      GitClient.new(nil, factory.bare_repo_dir)
     end
 
-    def create_repository_without_source_browser(bundle = nil, options = {})
-      GitRepository.new(create_client_from_bundle(bundle, options), nil)
+    def create_repository_without_source_browser(bundle = nil)
+      GitRepository.new(create_client_from_bundle(bundle), nil)
     end
 
-    def create_repository_with_source_browser(bundle = nil, options = {})
-      factory = TestRepositoryFactory.new(bundle, options)
+    def create_repository_with_source_browser(bundle = nil)
+      factory = TestRepositoryFactory.new(bundle)
       factory.unbundle
 
-      style_dir = File.expand_path("#{File.dirname(__FILE__)}/../app/templates")
-      git_client = GitClient.new('', factory.bare_repo_dir, style_dir)
+      git_client = GitClient.new('', factory.bare_repo_dir)
 
-      source_browser = GitSourceBrowser.new(
-              git_client,
-              options[:stub_mingle_revision_repository] || NoOpMingleRevisionRepository.new
-      )
+      source_browser = GitSourceBrowser.new(git_client)
 
       repository = GitRepository.new(git_client, source_browser)
       [repository, source_browser]
@@ -141,9 +137,8 @@ class TestRepositoryFactory
 
   end
 
-  def initialize(bundle, options)
+  def initialize(bundle)
     @bundle = bundle
-    @options = options
   end
 
   def unbundle
@@ -166,10 +161,6 @@ class TestRepositoryFactory
   
   def bundle_zip_path
     File.expand_path(File.join(File.dirname(__FILE__), "bundles/#{@bundle}.git.zip"))
-  end
-
-  def use_cached_source_browser_files?
-    @options[:use_cached_source_browser_files].nil? || @options[:use_cached_source_browser_files] == true
   end
 
   # def dir

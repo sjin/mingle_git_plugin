@@ -10,14 +10,10 @@ class GitRepository
     @source_browser = source_browser
   end
 
-
-  # *returns*: whether repository has any revisions
   def empty?
     @git_client.repository_empty?
   end
 
-  # *returns*: the GitChangeset identified by treeish.  will work for commit_id,
-  # short identifier, long identifier. raises error if changset does not exist.
   def changeset(commit_id)
     if commit_id && commit_id !~ /^[a-zA-Z0-9]{40}$/ && !['head', 'master'].include?(commit_id.downcase) && Project.current
       rev = Project.current.revisions.find_by_number(commit_id)
@@ -29,9 +25,6 @@ class GitRepository
 
   alias :revision :changeset
 
-  # *returns*: the next _limit_ changesets, starting with the changeset beyond _skip_up_to_,
-  # which is the last Revision that Mingle has cached. _skip_up_to_ is an actual Revision
-  # object from the Mingle model.
   def next_changesets(skip_up_to, limit)
     return [] if empty?
     head = @git_client.log_for_rev('head')
@@ -54,8 +47,6 @@ class GitRepository
 
   alias :next_revisions :next_changesets
 
-  # *returns* the GitFileNode or GitDirNode for _path_ for consumption by the source browser pages
-  # todo: need to co-ordinate with Mingle guys to remove dependency on Repository::NoSuchRevisionError
   def node(path, changeset_identifier = 'head')
     changeset_identifier = changeset_identifier.to_s.downcase
 
@@ -82,31 +73,16 @@ class GitRepository
     end
   end
 
-  #
-  #:nodoc:
   def git_patch_for(changeset, truncation_threshold = PER_FILE_PATCH_TRUNCATION_THRESHOLD)
     git_patch = GitPatch.new(changeset.commit_id, self, truncation_threshold)
     @git_client.git_patch_for(changeset.commit_id, git_patch)
     git_patch
   end
-  #
-  #   #:nodoc:
-  #   def files_in(changeset_identifier)
-  #     @git_client.files_in(changeset_identifier)
-  #   end
-  #
-  #   #:nodoc:
-  #   def dels_in(changeset_identifier)
-  #     @git_client.dels_in(changeset_identifier)
-  #   end
-  #
 
-  #:nodoc:
   def binary?(path, commit_id)
     @git_client.binary?(path, commit_id)
   end
      
-  #   #:nodoc:
   def pull
     return if @pulled
     @git_client.pull
@@ -121,8 +97,7 @@ class GitRepository
   def try_to_connect
     @git_client.try_to_connect
   end
-  #
-  #:nodoc:
+
   def construct_changeset(log_entry)
     GitChangeset.new(log_entry, self)
   end

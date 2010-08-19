@@ -2,11 +2,10 @@
 # Licenced under the Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0.txt)
 
 class GitSourceBrowser
-  def initialize(git_client, mingle_revision_repository)
+  
+  def initialize(git_client)
     @git_client = git_client
-    @mingle_revision_repository = mingle_revision_repository
   end
-
 
   def node(path, commit_id)
     is_dir = @git_client.dir?(path, commit_id)

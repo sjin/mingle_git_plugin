@@ -3,16 +3,13 @@
 
 require 'erb'
 
-# GitHtmlDiff produces an HTML snippet containing the diff for a single file change
 class GitHtmlDiff
   
-  # construct HgHtmlDiff from an HgGitChange
   def initialize(git_change, changeset_index)
     @git_change = git_change
     @changeset_index = changeset_index
   end
   
-  # *returns*: an HTML snippet containing the diff for a single file change
   def content
     escaped_lines = @git_change.lines.map{|l| ERB::Util.h(l)}
     line_index = 0
@@ -28,7 +25,6 @@ class GitHtmlDiff
     "<div style=\"font-family: Courier, monospace;\"><pre>#{color_lines}</pre></div>"
   end
     
-  #:nodoc:
   def padded_line_number(changeset_index, line_index)
     line_number = "#{changeset_index}.#{line_index}"
     while (line_number.length < 10)
@@ -37,7 +33,6 @@ class GitHtmlDiff
     line_number
   end
 
-  #:nodoc:
   def line_color(line)
     if line =~ /^\+/
       "#008800"

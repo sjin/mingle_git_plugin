@@ -1,8 +1,6 @@
 # Copyright (c) 2010 ThoughtWorks Inc. (http://thoughtworks.com)
 # Licenced under the Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0.txt)
 
-# {SCM_NAME}RepositoryClone manages when to pull from master to clone. Behavior pulled into
-# decorator as it makes tests much faster and also keeps GitRepository more single-minded.
 class GitRepositoryClone
     
   def initialize(repository)

@@ -34,7 +34,6 @@ class GitPatch
   end
 
   def add_current_change
-    #some repositories in the wild have empty changesets, so we only add if we have change lines
     if @current_change_lines.size > 1
       @changes << GitGitChange::Factory.construct(
               @commit_id,
