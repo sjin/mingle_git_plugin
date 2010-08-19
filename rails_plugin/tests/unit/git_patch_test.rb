@@ -100,10 +100,20 @@ class GitPatchTest < Test::Unit::TestCase
     assert_equal 'some_stuff.txt', changes.first.path
     assert_equal 'stuff.txt', changes.first.renamed_from_path
     assert_equal [:renamed], changes.first.change_type
-
-    assert_equal 'WorstestEver.png', changes.second.path
-    assert_equal 'WorstEver.png', changes.second.renamed_from_path
-    assert_equal [:renamed], changes.second.change_type
+    
+    if changes.size == 1
+      puts
+      puts "*"*72
+      puts "You are using git < v1.7.1.1."
+      puts "This is known to have issues tracking renames for binary files."
+      puts "See http://github.com/git/git/blob/master/Documentation/RelNotes-1.7.1.1.txt"
+      puts "Please upgrade to a newer version."
+      puts "*"*72
+    else
+      assert_equal 'WorstestEver.png', changes.second.path
+      assert_equal 'WorstEver.png', changes.second.renamed_from_path
+      assert_equal [:renamed], changes.second.change_type
+    end
     # assert change.binary?
   end
 
