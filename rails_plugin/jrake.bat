@@ -1,0 +1,2 @@
+
+jruby -S rake %*
