@@ -23,7 +23,7 @@ class GitClient
   end
   
   def pull
-    git("fetch -q")
+    git("fetch -q #{@master_path}")
   end
 
   def ensure_local_clone
