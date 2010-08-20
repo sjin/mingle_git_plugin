@@ -40,7 +40,7 @@ class GitClient
 
   def log_for_revs(from, to, limit=nil)
     window = from.blank? ? to : "#{from}..#{to}"
-    git_log("log #{window}", limit).reverse
+    git_log("log --reverse #{window}", limit)
   end
 
   def log_for_path(at_commit_id, *paths)
@@ -121,16 +121,17 @@ class GitClient
     puts "Executing command:\n#{command}" if GitClient.logging_enabled
 
     error = nil
-    
-    Open3.popen3(command) do |stdin, stdout, stderr|
-      stdin.close
-      yield(stdout) if block_given?
-      error = stderr.readlines
-    end
-    
-    if GitClient.logging_enabled
-      time_in_ms = ((Time.now - start)*1000).to_i
-      puts "execute using #{time_in_ms}ms"
+    begin
+      Open3.popen3(command) do |stdin, stdout, stderr|
+        stdin.close
+        yield(stdout) if block_given?
+        error = stderr.readlines
+      end
+    ensure
+      if GitClient.logging_enabled
+        time_in_ms = ((Time.now - start)*1000).to_i
+        puts "*** execute using #{time_in_ms}ms"
+      end
     end
     
     raise StandardError.new("Could not execute \"#{command}\". The error was:\n#{error}" ) unless error.empty?
@@ -140,13 +141,14 @@ class GitClient
   def git_log(command, limit=nil)
     raise "Repository is empty!" if repository_empty?
     
-    result = limit ? Pipe.new(limit) : []
+    result = []
 
     git(command) do |stdout|
       log_entry = {}
       stdout.each_line do |line|
         line.chomp!
         if line.starts_with?('commit')
+          return result if limit && result.size == limit
           log_entry = {}
           log_entry[:commit_id] = line.sub(/commit /, '')
           log_entry[:description] = ''
@@ -159,9 +161,8 @@ class GitClient
           log_entry[:description] << line.strip
         end
       end
-      
     end
 
-    result.to_a
+    result
   end
 end
