@@ -1,7 +1,7 @@
 # Copyright (c) 2010 ThoughtWorks Inc. (http://thoughtworks.com)
 # Licenced under the Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0.txt)
 
-COMPATIBLE_MINGLE_VERSIONS = ['3_0', 'unstable_3_0', 'unsupported-developer-build']
+COMPATIBLE_MINGLE_VERSIONS = ['3_2', 'unstable_3_2', 'unsupported-developer-build']
 
 if COMPATIBLE_MINGLE_VERSIONS.include?(MINGLE_VERSION)
 
