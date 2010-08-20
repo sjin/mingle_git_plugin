@@ -9,8 +9,7 @@ class GitSourceBrowser
 
   def node(path, commit_id)
     is_dir = @git_client.dir?(path, commit_id)
-    last_log_entry = @git_client.log_for_path(commit_id, path).first
-    is_dir ? DirNode.new(path, commit_id, @git_client, last_log_entry) : FileNode.new(path, commit_id, @git_client, last_log_entry)
+    is_dir ? DirNode.new(path, commit_id, @git_client) : FileNode.new(path, commit_id, @git_client)
   end
  
 end
@@ -22,11 +21,19 @@ class Node
   attr_reader :git_client
   alias :display_path :path
 
-  def initialize(path, commit_id, git_client, last_log_entry)
+  def initialize(path, commit_id, git_client, git_object_id=nil)
     @path = path.gsub(/\/$/, '')
     @commit_id = commit_id
     @git_client = git_client
-    @last_log_entry = last_log_entry
+    @git_object_id = git_object_id
+  end
+  
+  def git_object_id
+    @git_object_id ||= @git_client.ls_tree(path, commit_id)[path][:object_id]
+  end
+  
+  def last_log_entry
+    @last_log_entry ||= @git_client.log_for_path(@commit_id, @path).first
   end
   
   def name
@@ -38,19 +45,19 @@ class Node
   end
   
   def most_recent_committer
-    @last_log_entry[:author]
+    last_log_entry[:author]
   end
   
   def most_recent_commit_time
-    @last_log_entry[:time]
+    last_log_entry[:time]
   end
   
   def most_recent_commit_desc
-    @last_log_entry[:description]
+    last_log_entry[:description]
   end
   
   def most_recent_changeset_identifier
-    @last_log_entry[:commit_id]
+    last_log_entry[:commit_id]
   end
   
   def parent_path_components
@@ -66,7 +73,7 @@ class DirNode < Node
 
   def children
     git_client.ls_tree(path, commit_id, true).collect do |child_path, desc|
-      desc[:type] == :tree ? DirNode.new(child_path, commit_id, git_client, desc[:last_log_entry]) : FileNode.new(child_path, commit_id, git_client, desc[:last_log_entry])
+      node = desc[:type] == :tree ? DirNode.new(child_path, commit_id, git_client, desc[:object_id]) : FileNode.new(child_path, commit_id, git_client, desc[:object_id])
     end
   end
   
@@ -94,9 +101,4 @@ class FileNode < Node
     false
   end
   
-  private
-  def git_object_id
-    tree = git_client.ls_tree(path, commit_id)
-    tree[path][:object_id]
-  end
 end

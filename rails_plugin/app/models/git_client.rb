@@ -94,13 +94,6 @@ class GitClient
         tree[path] = {:type => type, :object_id => object_id}
       end
     end
-    
-    paths = tree.keys
-    
-    log_for_path(commit_id, *paths).each_with_index do |log_entry, i|
-      tree[paths[i]][:last_log_entry] = log_entry
-    end
-
     tree
   end
   

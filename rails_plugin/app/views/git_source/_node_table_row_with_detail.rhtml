@@ -1,0 +1,23 @@
+<td> <% if node.dir? -%>
+  <%= link_to node.name, {:path => node.path_components, :rev => view_revision}, {:class => 'folder node-link'} %>
+  <% else -%>
+  <%= link_to node.name, {:path => node.path_components, :rev => view_revision}, { :class => 'file node-link'} %>
+  <% end -%>
+</td>
+
+<% if node.most_recent_commit_time -%>
+  <td><%= time_ago_in_words(node.most_recent_commit_time) %></td>
+<% else -%>
+  <td>Still caching...</td>
+<% end -%>
+<% if node.most_recent_committer -%>
+  <td><%= node.most_recent_committer %></td>
+<% else -%>
+  <td>Still caching...</td>
+<% end -%>
+<td><%= link_to "#{GitChangeset.short_identifier(node.most_recent_changeset_identifier)}...", changeset_url(:rev => node.most_recent_changeset_identifier) %></td>
+<% if node.most_recent_commit_desc -%>
+  <td><%= replace_card_links(h(truncate(node.most_recent_commit_desc, :length => 255))) %></td>
+<% else -%>
+  <td>Still caching...</td>
+<% end -%>

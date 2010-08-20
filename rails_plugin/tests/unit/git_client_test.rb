@@ -123,13 +123,5 @@ class GitClientTest < Test::Unit::TestCase
     assert_equal ['hello.c', 'Makefile'].sort, git_client.ls_tree("", "9f953d7cfd6eff8f79e5e383e7bca4b0cf89e13a", true).keys.sort
     assert_equal ['hello.c'], git_client.ls_tree("", "2cf7a6a5e25f022ac4b18ce7165661cdc8177013", true).keys
   end
-  
-  def test_ls_tree_should_contain_last_log_entry_for_each_child
-    git_client = TestRepositoryFactory.create_client_from_bundle("hello")
-    
-    assert_equal "9f953d7cfd6eff8f79e5e383e7bca4b0cf89e13a", git_client.ls_tree("", "9f953d7cfd6eff8f79e5e383e7bca4b0cf89e13a", true)["hello.c"][:last_log_entry][:commit_id]
-    assert_equal "b5ad6f93ec7252f8acd40a954451f3c25615a699", git_client.ls_tree("", "8cf18930f5c6f457cec89011dfe45d8aff07d870", true)["hello.c"][:last_log_entry][:commit_id]
-    
-  end
-  
+
 end
