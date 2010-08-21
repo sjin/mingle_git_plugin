@@ -89,7 +89,7 @@ class GitRepositoryTest < Test::Unit::TestCase
 
   def test_next_changesets_returns_empty_array_when_project_up_to_date_with_repository
     repository = TestRepositoryFactory.create_repository_without_source_browser('hello')
-    youngest_in_project = '9f953d7cfd6eff8f79e5e383e7bca4b0cf89e13a'
+    youngest_in_project = OpenStruct.new(:number => 2, :identifier => '9f953d7cfd6eff8f79e5e383e7bca4b0cf89e13a')
     assert_equal [], repository.next_changesets(youngest_in_project, 100)
   end
 

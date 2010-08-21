@@ -27,9 +27,6 @@ class GitRepository
 
   def next_changesets(skip_up_to, limit)
     return [] if empty?
-    head = @git_client.log_for_rev('head')
-    return [] if skip_up_to && skip_up_to == head[:commit_id]
-    
     to = 'head'
     from = skip_up_to ? skip_up_to.identifier : nil
 
