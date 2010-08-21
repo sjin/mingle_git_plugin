@@ -33,9 +33,15 @@ class GitRepository
     to = 'head'
     from = skip_up_to ? skip_up_to.identifier : nil
 
-    log_entries = @git_client.log_for_revs(from, to, limit)
+    log_entries = @git_client.log_for_revs(from, to, limit) do |log_entry|
+      if !Project.current
+        false
+      else
+        Project.current.revisions.exists?(:identifier => log_entry[:commit_id])
+      end
+    end
 
-    last_number = skip_up_to ? skip_up_to.number+1 : 0
+    last_number = skip_up_to ? skip_up_to.number + 1 : 0
 
     log_entries.map do |log_entry|
       changeset = construct_changeset(log_entry)
@@ -57,6 +63,8 @@ class GitRepository
            GitRepository unable to find changeset #{changeset_identifier}: #{e}.
            This could be OK if the #{changeset_identifier} is indeed a bogus changeset.
          })
+      ActiveRecord::Base.logger.debug(e)
+      ActiveRecord::Base.logger.debug(e.backtrace.join("\n"))
       raise Repository::NoSuchRevisionError.new
     end
 

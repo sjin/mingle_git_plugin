@@ -7,7 +7,7 @@ require 'open3'
 class GitClient
 
   cattr_accessor :logging_enabled
-  # @@logging_enabled = true
+#  @@logging_enabled = true
   
   def initialize(master_path, clone_path)
     @master_path = master_path
@@ -38,9 +38,9 @@ class GitClient
     git_log("log #{rev} -1").first
   end
 
-  def log_for_revs(from, to, limit=nil)
+  def log_for_revs(from, to, limit=nil, &exclude_block)
     window = from.blank? ? to : "#{from}..#{to}"
-    git_log("log --reverse #{window}", limit)
+    git_log("log --reverse #{window}", limit, &exclude_block)
   end
 
   def log_for_path(at_commit_id, *paths)
@@ -138,7 +138,7 @@ class GitClient
   end
   
   
-  def git_log(command, limit=nil)
+  def git_log(command, limit=nil, &exclude_block)
     raise "Repository is empty!" if repository_empty?
     
     result = []
@@ -153,8 +153,8 @@ class GitClient
           log_entry[:commit_id] = line.sub(/commit /, '')
           log_entry[:description] = ''
           # the next line is a hack for tests.
-          next if Project.current && Project.current.revisions.exists?(:identifier => log_entry[:commit_id])
-          result << log_entry
+          next if block_given? && exclude_block.call(log_entry)
+          result << log_entry 
         elsif line.starts_with?('Author:')
           log_entry[:author] = line.sub(/Author: /, '')
         elsif line.starts_with?('Date:')
