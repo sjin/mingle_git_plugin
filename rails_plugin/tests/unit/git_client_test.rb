@@ -123,5 +123,12 @@ class GitClientTest < Test::Unit::TestCase
     assert_equal ['hello.c', 'Makefile'].sort, git_client.ls_tree("", "9f953d7cfd6eff8f79e5e383e7bca4b0cf89e13a", true).keys.sort
     assert_equal ['hello.c'], git_client.ls_tree("", "2cf7a6a5e25f022ac4b18ce7165661cdc8177013", true).keys
   end
+  
+  def test_should_parse_commits_with_multi_line_comment
+    git_client = TestRepositoryFactory.create_client_from_bundle("changeset_with_mutiline_commit_message")
+    
+    log_entries = git_client.log_for_revs(nil, 'head')
+    assert_equal "this\n\n is a multi-line\n\ncommit", log_entries.first[:description]
+  end
 
 end

@@ -31,7 +31,7 @@ class GitClient
   end
 
   def repository_empty?
-    Dir["#{@clone_path}/objects/pack/*"].empty?
+    Dir["#{@clone_path}/objects/*/*"].empty?
   end
 
   def log_for_rev(rev)
@@ -148,7 +148,8 @@ class GitClient
       stdout.each_line do |line|
         line.chomp!
         if line.starts_with?('commit')
-          return result if limit && result.size == limit
+          # log_entry[:description].strip! if log_entry[:description]
+          return strip_desc(result) if limit && result.size == limit
           log_entry = {}
           log_entry[:commit_id] = line.sub(/commit /, '')
           log_entry[:description] = ''
@@ -160,11 +161,15 @@ class GitClient
         elsif line.starts_with?('Date:')
           log_entry[:time] = Time.parse(line.sub(/Date:   /, ''))
         else
-          log_entry[:description] << line.strip
+          log_entry[:description] << line[4..-1] + "\n" unless line.empty?
         end
       end
     end
 
-    result
+    strip_desc(result)
+  end
+  
+  def strip_desc(log_entries)
+    log_entries.each{ |entry| entry[:description].chomp! }
   end
 end
