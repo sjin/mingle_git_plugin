@@ -163,37 +163,6 @@ class TestRepositoryFactory
     File.expand_path(File.join(File.dirname(__FILE__), "bundles/#{@bundle}.git.zip"))
   end
 
-  # def dir
-  #   @repos_dir ||= repos_path
-  # end
-  # 
-  # def bundle_path
-  #   File.join(File.dirname(__FILE__), 'bundles', "#{@bundle}.git.zip")
-  # end
-  # 
-  # def extract_bundle(zip_file)
-  #   puts "rm -rf #{dir} && mkdir -p #{dir} && cd #{dir} && unzip -qo ../#{zip_file}"
-  #   sh "rm -rf #{dir} && mkdir -p #{dir} && cd #{dir} && unzip -qo ../#{zip_file}"
-  # end
-  # 
-  # def source_browser_cache_path
-  #   if (@bundle)
-  #     File.expand_path(File.join(File.dirname(__FILE__), '..', '..', 'tmp', 'test',
-  #                                'test_source_browser_caches_from_bundles', @bundle))
-  #   else
-  #     File.expand_path(File.join(File.dirname(__FILE__), '..', '..', 'tmp', 'test',
-  #                                'test_source_browser_caches_from_bundles', 'empty'))
-  #   end
-  # end
-  # 
-  # def repos_path
-  #   if (@bundle)
-  #     File.expand_path(File.join(TEST_REPOS_TMP_DIR))
-  #   else
-  #     File.expand_path(File.join(TEST_REPOS_TMP_DIR, 'empty'))
-  #   end
-  # end
-
 end
 
 # since app/model is not on the LOAD_PATH

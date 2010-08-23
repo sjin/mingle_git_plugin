@@ -130,5 +130,11 @@ class GitClientTest < Test::Unit::TestCase
     log_entries = git_client.log_for_revs(nil, 'head')
     assert_equal "this\n\n is a multi-line\n\ncommit", log_entries.first[:description]
   end
+  
+  def test_should_be_able_to_tell_whether_a_path_is_binary
+    git_client = TestRepositoryFactory.create_client_from_bundle(nil)
+    assert git_client.binary?("lib/foo.jar", nil)
+    assert !git_client.binary?("src/foo.java", nil)
+  end
 
 end

@@ -67,7 +67,8 @@ class GitClient
   end
 
   def binary?(path, commit_id)
-
+    mime_type = GitClientMimeTypes.lookup_for_file(path)
+    !mime_type.start_with?('text/')
   end
 
   def cat(path, object_id, io)
