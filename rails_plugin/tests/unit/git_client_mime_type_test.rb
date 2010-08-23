@@ -22,18 +22,18 @@ class GitClientMimeTypesTest < Test::Unit::TestCase
     assert_equal "application/x-tar", GitClientMimeTypes.lookup_for_file("a.tar.foo")
   end
   
-  def test_mime_type_for_file_without_ext
-    assert_equal "application/octet-stream", GitClientMimeTypes.lookup_for_file("foo")
-  end
-  
-  def test_mime_type_for_well_known_txt_files_without_extension
+  def test_mime_type_for_file_without_ext_is_text_plain
+    assert_equal "text/plain", GitClientMimeTypes.lookup_for_file("foo")
     assert_equal 'text/plain', GitClientMimeTypes.lookup_for_file('src/README')
     assert_equal 'text/plain', GitClientMimeTypes.lookup_for_file('src/INSTALL')
     assert_equal 'text/plain', GitClientMimeTypes.lookup_for_file('src/Copyright')
     assert_equal 'text/plain', GitClientMimeTypes.lookup_for_file('src/Rakefile')
     assert_equal 'text/plain', GitClientMimeTypes.lookup_for_file('src/ChangeLog')
     assert_equal 'text/plain', GitClientMimeTypes.lookup_for_file('src/CHANGELOG')
-    
+  end
+  
+  def test_mime_type_for_file_ext_unknow_is_text_plain
+    assert_equal 'text/plain', GitClientMimeTypes.lookup_for_file('src/foo.foobar')
   end
  
 end
