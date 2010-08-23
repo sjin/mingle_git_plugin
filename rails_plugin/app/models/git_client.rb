@@ -27,7 +27,7 @@ class GitClient
   end
 
   def ensure_local_clone
-    git("clone --bare \"#{@master_path}\" \"#{@clone_path}\"") unless File.file?(@clone_path + '/HEAD')
+    git("clone --mirror \"#{@master_path}\" \"#{@clone_path}\"") unless File.file?(@clone_path + '/HEAD')
   end
 
   def repository_empty?
