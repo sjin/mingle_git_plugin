@@ -73,8 +73,7 @@ class GitClient
 
   def cat(path, object_id, io)
     git("cat-file blob #{object_id}") do |stdout|
-      
-      io << stdout.read
+      io.write(stdout.read)
     end
   end
 
