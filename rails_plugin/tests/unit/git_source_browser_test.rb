@@ -122,5 +122,10 @@ int main(int argc, char **argv)
       end
     end
   end  
-    
+  
+  def test_should_detect_binary_files
+    setup_repos('renames')
+    assert @source_browser.node('WorstestEver.png', 'master').binary?
+    assert !@source_browser.node('some_stuff.txt', 'master').binary?
+  end
 end

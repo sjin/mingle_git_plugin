@@ -98,7 +98,7 @@ class FileNode < Node
   end
   
   def binary?
-    false
+    @git_client.binary?(path, commit_id)
   end
   
 end
