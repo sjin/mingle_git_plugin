@@ -10,53 +10,7 @@ class GitSourceBrowserTest < Test::Unit::TestCase
   def setup_repos(bundle)
     @repos, @source_browser = TestRepositoryFactory.create_repository_with_source_browser(bundle)
   end
-      
-  def _ignore_test_file_cache_is_built_correctly_for_first_changeset
-    setup_repos('one_changeset')
-    
-    expected_file_cache_content = {
-      '/' => '19df35cdb7d0219cb2b1adfe791d7b27bf14fda8', 
-      'README' => '19df35cdb7d0219cb2b1adfe791d7b27bf14fda8'
-    }
-    actual_file_cache_content = @source_browser.raw_file_cache_content(0)
-    assert_equal_hash(expected_file_cache_content, actual_file_cache_content)
-  end
   
-  def _ignore_test_file_cache_is_built_correctly_for_add_changeset
-    setup_repos('one_add')
-  
-    expected_file_cache_content = {
-      '/' => '6b3f0eefe63182cd2dea92d4a219199ef6429125', 
-      'README' => '5bb588cbc98c0a4c46ea0fadea4092ec5c92afb4',
-      'INSTALL' => '6b3f0eefe63182cd2dea92d4a219199ef6429125'
-    }
-    actual_file_cache_content = @source_browser.raw_file_cache_content(1)
-    assert_equal_hash(expected_file_cache_content, actual_file_cache_content)
-  end
-  
-  def _ignore_test_file_cache_is_built_correctly_for_remove_changeset
-    setup_repos('one_remove')
-    
-    expected_file_cache_content = {
-      '/' => '93694ea4a21c1933bb8f5f4d46a8bb352ee0ed0a',
-      'README' => '72e690d34170cef2eb7c1c3d71d8df8b3ec9e17d'
-    }
-    actual_file_cache_content = @source_browser.raw_file_cache_content(1)
-    assert_equal_hash(expected_file_cache_content, actual_file_cache_content)
-  end
-  
-  def _ignore_test_file_cache_is_built_correctly_for_rename_changeset
-    setup_repos('renames')
-    
-    expected_file_cache_content = {
-      '/' => '4bdbb6906cef5481b93e192395c933af43b4935b',
-      'WorstestEver.png' => '4bdbb6906cef5481b93e192395c933af43b4935b',
-      'some_stuff.txt' => '4bdbb6906cef5481b93e192395c933af43b4935b'
-    }
-    actual_file_cache_content = @source_browser.raw_file_cache_content(1)
-    assert_equal_hash(expected_file_cache_content, actual_file_cache_content)
-  end
-          
   def test_node_returns_file_node_for_file_path
     setup_repos('one_changeset')
     
@@ -133,40 +87,6 @@ class GitSourceBrowserTest < Test::Unit::TestCase
     
   end
   
-  # this is relevant while large chunks of changesets are being cached, particularly during initialization
-  def _ignore_test_child_nodes_are_still_created_if_mingle_revisions_cannot_be_found_to_populate_most_recent_commit_info
-    setup_repos('one_changeset_with_subdirs')
-    
-    dir = @source_browser.node('.', "58eec0e41c32000f90dfa7c8f18d0391b4165013")
-    children = dir.children
-    children.each do |child|
-      assert_nil child.most_recent_committer
-      assert_nil child.most_recent_commit_time
-      assert_nil child.most_recent_commit_desc
-    end
-  end
-  
-  def _ignore_test_tip_node_returns_proposed_tip_if_its_cached
-    setup_repos('hello')
-    
-    assert_equal 1, @source_browser.tip_node('', 1, 
-      "82e55d328c8ca4ee16520036c0aaace03a5beb65").changeset_number
-  end
-  
-  def _ignore_test_tip_node_returns_only_youngest_from_file_cache
-    setup_repos('hello')
-    
-    assert_equal 1, @source_browser.tip_node('', 2, 
-      "fef857204a0c58caefe249dda038316e856e896d").changeset_number
-  end
-  
-  def _ignore_test_tip_node_returns_rev_zero_when_nothing_cached
-    setup_repos('hello')
-    
-    assert_equal 0, @source_browser.tip_node('', 2, 
-      "fef857204a0c58caefe249dda038316e856e896d").changeset_number
-  end
-
   def test_can_get_file_contents_from_fixed_node
     setup_repos('hello')
     node = @source_browser.node("hello.c", "2cf7a6a5e25f022ac4b18ce7165661cdc8177013")
