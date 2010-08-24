@@ -7,7 +7,7 @@ require 'open3'
 class GitClient
 
   cattr_accessor :logging_enabled
-#  @@logging_enabled = true
+  @@logging_enabled = (ENV["ENABLE_GIT_CLIENT_LOGGING"] && ENV["ENABLE_GIT_CLIENT_LOGGING"].downcase == 'true')
   
   def initialize(master_path, clone_path)
     @master_path = master_path

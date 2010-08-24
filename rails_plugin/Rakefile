@@ -6,27 +6,47 @@ require 'rake/rdoctask'
 
 begin
   require 'rcov/rcovtask'
+  
+  desc "run all unit tests"
+  Rcov::RcovTask.new(:test) do |t|
+    t.libs << "tests"
+    t.test_files = FileList['tests/unit/**/*_test.rb']
+    t.output_dir = "reports/coverage"
+    t.verbose = true
+    t.rcov_opts << '--exclude gems,tests'
+    t.rcov_opts << '--exclude "yaml,parser.y,racc,(erb),(eval),(recognize_optimized),erb"' if RUBY_PLATFORM =~ /java/
+    t.rcov_opts << '--include-file "app/.*\.rb"'
+    t.rcov_opts << ' --html'
+  end
+
+  task :open_report do
+    `open reports/coverage/index.html`
+  end
+
+  task :rcov => [:test, :open_report]
 rescue LoadError
-  raise 'Could not find the rcov gem, please run `gem install rcov` to get some metrics'
+    puts 'Could not find the rcov gem, please run `gem install rcov` to be able to run tests'
 end
 
-desc "run all unit tests"
-Rcov::RcovTask.new(:test) do |t|
-  t.libs << "tests"
-  t.test_files = FileList['tests/unit/**/*_test.rb']
-  t.output_dir = "reports/coverage"
-  t.verbose = true
-  t.rcov_opts << '--exclude gems,tests'
-  t.rcov_opts << '--exclude "yaml,parser.y,racc,(erb),(eval),(recognize_optimized),erb"' if RUBY_PLATFORM =~ /java/
-  t.rcov_opts << '--include-file "app/.*\.rb"'
-  t.rcov_opts << ' --html'
-end
+desc "Deploy this plugin to a mingle installation running on windows."
+task :deploy_windows do
+  raise 'MINGLE_ROOT environmant is undefined!' unless ENV['MINGLE_ROOT']
+  
+  puts "**** Copying files to your mingle directory..."
+  plugin_dir = File.join(ENV['MINGLE_ROOT'], 'vendor', 'plugins', 'mingle_git_plugin')
+  mkdir_p plugin_dir
+  Dir["./*"].each do |path|
+    cp_r(path, plugin_dir)
+  end
 
-task :open_report do
-  `open reports/coverage/index.html`
+  puts "**** Stopping mingle..."
+  `net stop mingleserver_3_2`
+  puts "**** Done..."
+  
+  puts "**** Starting mingle..."
+  `net start mingleserver_3_2`
+  puts "**** Done..."
 end
-
-task :rcov => [:test, :open_report]
 
 desc "default task"
 task :default => [:test]
