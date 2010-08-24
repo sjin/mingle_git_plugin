@@ -35,24 +35,29 @@ class GitClient
   end
 
   def log_for_rev(rev)
-    git_log("log #{sanitize(rev)} -1").first
+    rev = sanitize(rev)
+    git_log("log #{rev} -1").first
   end
 
   def log_for_revs(from, to, limit=nil, &exclude_block)
-    window = from.blank? ? to : "#{sanitize(from)}..#{sanitize(to)}"
+    from = sanitize(from)
+    to = sanitize(to)
+    window = from.blank? ? to : "#{from}..#{to}"
     git_log("log --reverse #{window}", limit, &exclude_block)
   end
 
   def log_for_path(at_commit_id, *paths)
+    at_commit_id = sanitize(at_commit_id)
     cmds = paths.collect do |path|
-      "log #{sanitize(at_commit_id)} -1 -- \"#{path}\""
+      "log #{at_commit_id} -1 -- \"#{path}\""
     end
     
     git_log(cmds)
   end
 
   def git_patch_for(commit_id, git_patch)
-    git("log -1 -p #{sanitize(commit_id)} -M") do |stdout|
+    commit_id = sanitize(commit_id)
+    git("log -1 -p #{commit_id} -M") do |stdout|
       
       keep_globbing = true
       stdout.each_line do |line|
@@ -84,10 +89,11 @@ class GitClient
   end
 
   def ls_tree(path, commit_id, children = false)
+    commit_id = sanitize(commit_id)
     tree = {}
     path += '/' if children && !root_path?(path)
     
-    git("ls-tree #{sanitize(commit_id)} \"#{path}\"") do |stdout|
+    git("ls-tree #{commit_id} \"#{path}\"") do |stdout|
       stdout.each_line do |line|
         mode, type, object_id, path = line.split(/\s+/)
         type = type.to_sym
