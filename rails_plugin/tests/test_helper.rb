@@ -3,6 +3,13 @@
 
 require 'rubygems'
 
+begin
+  gem 'ci_reporter'
+  require 'ci/reporter/rake/test_unit_loader.rb'
+rescue
+  puts '****** ci_reporter gem is not available. Reports will not be generated.'
+end
+
 unless RUBY_PLATFORM =~ /java/
   $LOAD_PATH.unshift File.expand_path(File.join(File.dirname(__FILE__), '../../tools/jruby-1.2.0/lib/ruby/gems/1.8/gems/rake-0.8.4/lib'))
   $LOAD_PATH.unshift File.expand_path(File.join(File.dirname(__FILE__), '../../tools/jruby-1.2.0/lib/ruby/gems/1.8/gems/activesupport-2.3.3/lib'))

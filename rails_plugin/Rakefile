@@ -3,30 +3,41 @@
 
 require 'rake/testtask'
 require 'rake/rdoctask'
+require 'rake/clean'
+
+CLOBBER.include('reports')
 
 begin
   require 'rcov/rcovtask'
-  
-  desc "run all unit tests"
-  Rcov::RcovTask.new(:test) do |t|
-    t.libs << "tests"
-    t.test_files = FileList['tests/unit/**/*_test.rb']
-    t.output_dir = "reports/coverage"
-    t.verbose = true
-    t.rcov_opts << '--exclude gems,tests'
-    t.rcov_opts << '--exclude "yaml,parser.y,racc,(erb),(eval),(recognize_optimized),erb"' if RUBY_PLATFORM =~ /java/
-    t.rcov_opts << '--include-file "app/.*\.rb"'
-    t.rcov_opts << ' --html'
-  end
-
-  task :open_report do
-    `open reports/coverage/index.html`
-  end
-
-  task :rcov => [:test, :open_report]
 rescue LoadError
-    puts 'Could not find the rcov gem, please run `gem install rcov` to be able to run tests'
+  raise 'Could not find the rcov gem, please run `gem install rcov` to be able to run tests'
 end
+
+begin
+  ENV['CI_REPORTS'] = File.expand_path('../reports', __FILE__) # put reports in a different dir
+  gem 'ci_reporter'
+  require 'ci/reporter/rake/test_unit' # use this if you're using Test::Unit
+rescue LoadError
+  raise 'Could not find the ci_reporter gem, please run `gem install ci_reporter` to be able to run tests'
+end
+
+desc "run all unit tests"
+Rcov::RcovTask.new(:test => [:clean, 'ci:setup:testunit']) do |t|
+  t.libs << "tests"
+  t.test_files = FileList['tests/unit/**/*_test.rb']
+  t.output_dir = "reports/coverage"
+  t.verbose = true
+  t.rcov_opts << '--exclude gems,tests'
+  t.rcov_opts << '--exclude "yaml,parser.y,racc,(erb),(eval),(recognize_optimized),erb"' if RUBY_PLATFORM =~ /java/
+  t.rcov_opts << '--include-file "app/.*\.rb"'
+  t.rcov_opts << ' --html'
+end
+
+task :open_report do
+  `open reports/coverage/index.html`
+end
+
+task :rcov => [:test, :open_report]
 
 desc "Deploy this plugin to a mingle installation."
 task :deploy do
