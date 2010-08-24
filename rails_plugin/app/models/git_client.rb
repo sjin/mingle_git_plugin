@@ -134,7 +134,15 @@ class GitClient
       end
     end
     
-    raise StandardError.new("Could not execute \"#{command}\". The error was:\n#{error}" ) unless error.empty?
+    if error.any?
+      puts
+      puts "*** warning: the git client exited with an error:"
+      puts error
+    end
+    
+    if error.any? { |e| e.strip.start_with?("fatal:") }
+      raise StandardError.new("Could not execute \"#{command}\". The error was:\n#{error}" )
+    end
   end
   
   

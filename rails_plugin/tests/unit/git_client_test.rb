@@ -132,7 +132,7 @@ class GitClientTest < Test::Unit::TestCase
   end
   
   def test_should_be_able_to_tell_whether_a_path_is_binary
-    git_client = TestRepositoryFactory.create_client_from_bundle(nil)
+    git_client = TestRepositoryFactory.create_client_from_bundle('empty_rev')
     assert git_client.binary?("lib/foo.jar", nil)
     assert !git_client.binary?("src/foo.java", nil)
   end

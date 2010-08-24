@@ -41,6 +41,7 @@ require File.expand_path(File.join(File.dirname(__FILE__), 'patch_helper'))
 RAILS_ENV = 'test'
 TMP_DIR = File.expand_path(File.join(File.dirname(__FILE__), '../tmp/test'))
 TEST_REPOS_TMP_DIR = File.expand_path(File.join(File.dirname(__FILE__), '../tmp/test/test_repositories_from_bundles'))
+TMP_TEST_REPOS_TMP_DIR = File.expand_path(File.join(File.dirname(__FILE__), '../tmp/test/extracted-bundles'))
 MINGLE_DATA_DIR = File.join(TMP_DIR, 'mingle_data_dir')
 DB_PATH = File.join(TMP_DIR, 'db')
 
@@ -123,7 +124,9 @@ class TestRepositoryFactory
       factory = TestRepositoryFactory.new(bundle)
       factory.unbundle
 
-      GitClient.new(nil, factory.bare_repo_dir)
+      client = GitClient.new(factory.master_path, factory.repos_path)
+      client.ensure_local_clone
+      client
     end
 
     def create_repository_without_source_browser(bundle = nil)
@@ -134,11 +137,12 @@ class TestRepositoryFactory
       factory = TestRepositoryFactory.new(bundle)
       factory.unbundle
 
-      git_client = GitClient.new('', factory.bare_repo_dir)
+      client = GitClient.new(factory.master_path, factory.repos_path)
+      client.ensure_local_clone
 
-      source_browser = GitSourceBrowser.new(git_client)
+      source_browser = GitSourceBrowser.new(client)
 
-      repository = GitRepository.new(git_client, source_browser)
+      repository = GitRepository.new(client, source_browser)
       [repository, source_browser]
     end
 
@@ -151,19 +155,26 @@ class TestRepositoryFactory
   def unbundle
     if @bundle
       
-      FileUtils.rm_rf bare_repo_dir
+      FileUtils.rm_rf "#{repos_path}/#{@bundle}.git"
+      FileUtils.rm_rf tmp_repos_path
       FileUtils.mkdir_p repos_path
+      FileUtils.mkdir_p tmp_repos_path
       
-      `unzip#{Config::CONFIG['EXEEXT']} -q #{bundle_zip_path} -d #{repos_path}`
+      `unzip#{Config::CONFIG['EXEEXT']} -q #{bundle_zip_path} -d #{tmp_repos_path}`
+      # `git clone --mirror #{tmp_repos_path}/#{@bundle}.git #{bare_repo_dir}`
     end
   end
   
-  def bare_repo_dir
-    File.expand_path("#{repos_path}/#{@bundle}.git")
+  def master_path
+    "#{tmp_repos_path}/#{@bundle}.git"
   end
   
   def repos_path
     TEST_REPOS_TMP_DIR
+  end
+  
+  def tmp_repos_path
+    TMP_TEST_REPOS_TMP_DIR
   end
   
   def bundle_zip_path

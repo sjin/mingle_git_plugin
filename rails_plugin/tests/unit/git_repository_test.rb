@@ -6,7 +6,7 @@ require File.expand_path(File.join(File.dirname(__FILE__), '..', 'test_helper'))
 class GitRepositoryTest < Test::Unit::TestCase
 
   def test_empty_returns_true_when_no_changesets_in_repos
-    repository = TestRepositoryFactory.create_repository_without_source_browser(nil)
+    repository = TestRepositoryFactory.create_repository_without_source_browser('empty_rev')
     assert repository.empty?
   end
 
@@ -16,7 +16,7 @@ class GitRepositoryTest < Test::Unit::TestCase
   end
 
   def test_changeset_raises_error_when_repository_is_empty
-    repository = TestRepositoryFactory.create_repository_without_source_browser(nil)
+    repository = TestRepositoryFactory.create_repository_without_source_browser('empty_rev')
     begin
       changeset = repository.changeset('bogus')
       fail "should have failed"
@@ -46,7 +46,7 @@ class GitRepositoryTest < Test::Unit::TestCase
   end
 
   def test_next_changesets_returns_empty_array_when_repository_empty
-    repository = TestRepositoryFactory.create_repository_without_source_browser(nil)
+    repository = TestRepositoryFactory.create_repository_without_source_browser('empty_rev')
     assert_equal [], repository.next_changesets(nil, 100)
   end
 
