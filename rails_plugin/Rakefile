@@ -28,7 +28,7 @@ Rcov::RcovTask.new(:test => [:clean, :clobber, 'ci:setup:testunit']) do |t|
   t.output_dir = "reports/coverage"
   t.verbose = true
   t.rcov_opts << '--exclude gems,tests'
-  t.rcov_opts << '--exclude "yaml,parser.y,racc,(erb),(eval),(recognize_optimized),erb"' if RUBY_PLATFORM =~ /java/
+  t.rcov_opts << '--exclude "yaml,parser.y,racc,(erb),(eval),(recognize_optimized),erb,<script>,jruby"' if RUBY_PLATFORM =~ /java/
   t.rcov_opts << '--include-file "app/.*\.rb"'
   t.rcov_opts << ' --html'
 end
