@@ -14,7 +14,7 @@ rescue LoadError
 end
 
 begin
-  ENV['CI_REPORTS'] = File.expand_path('../reports', __FILE__) # put reports in a different dir
+  ENV['CI_REPORTS'] = File.expand_path('../reports/units', __FILE__) # put reports in a different dir
   gem 'ci_reporter'
   require 'ci/reporter/rake/test_unit' # use this if you're using Test::Unit
 rescue LoadError
