@@ -1,7 +1,7 @@
 <td> <% if node.dir? -%>
-  <%= link_to node.name, {:path => node.path_components, :rev => view_revision}, {:class => 'folder node-link'} %>
+  <%= link_to node.name, {:controller => 'source', :action => 'index', :path => node.path_components, :rev => view_revision}, {:class => 'folder node-link'} %>
   <% else -%>
-  <%= link_to node.name, {:path => node.path_components, :rev => view_revision}, { :class => 'file node-link'} %>
+  <%= link_to node.name, {:controller => 'source', :action => 'index', :path => node.path_components, :rev => view_revision}, { :class => 'file node-link'} %>
   <% end -%>
 </td>
 
