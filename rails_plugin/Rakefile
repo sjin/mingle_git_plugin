@@ -28,8 +28,8 @@ rescue LoadError
     puts 'Could not find the rcov gem, please run `gem install rcov` to be able to run tests'
 end
 
-desc "Deploy this plugin to a mingle installation running on windows."
-task :deploy_windows do
+desc "Deploy this plugin to a mingle installation."
+task :deploy do
   raise 'MINGLE_ROOT environmant is undefined!' unless ENV['MINGLE_ROOT']
   
   puts "**** Copying files to your mingle directory..."
@@ -38,7 +38,9 @@ task :deploy_windows do
   Dir["./*"].each do |path|
     cp_r(path, plugin_dir)
   end
+end
 
+task :deploy_windows => [:deploy] do
   puts "**** Stopping mingle..."
   `net stop mingleserver_3_2`
   puts "**** Done..."
