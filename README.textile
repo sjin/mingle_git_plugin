@@ -1,0 +1,49 @@
+h1. Mingle Git Plugin
+
+A mingle plugin that enables git integration with mingle.
+
+h2. Features
+
+* Revision checkins show up in a Mingle project's history
+* Source browsing for the git repository
+* Changeset diff viewer
+* Branches
+
+h2. Requirements
+
+This plugin has been tested with and known to work with Mingle version 3.2, and git version 1.7.0 and above.
+
+h2. Installation
+
+* See "http://git-scm.com/download":http://git-scm.com/download on downloading git for your operating system.
+* Ensure that git is installed on the mingle server, and is available on the path.
+* It is recommended that you use git version 1.7.0 or higher.
+
+$ git clone git://github.com/ThoughtWorksStudios/mingle_git_plugin.git
+
+* Copy the mingle_git_plugin/rails_plugin directory to MINGLE_ROOT/vendor/plugins/mingle_git_plugin.
+
+  where MINGLE_ROOT is the location where Mingle 3.2 is installed. 
+
+    * On Windows, this is the location that the installer installed Mingle at
+    * On OSX, this will be within the app bundle, at <mingle_application_bundle>/Contents/Resources/app
+    * On *NIX, this is the expanded archive
+* Restart the mingle server
+
+h2. License
+
+Mingle Git Plugin is Licensed under the Apache License v2.0. See the LICENSE file for details.
+
+Copyright 2010 ThoughtWorks, Inc.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
