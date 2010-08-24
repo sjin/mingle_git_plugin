@@ -22,7 +22,7 @@ rescue LoadError
 end
 
 desc "run all unit tests"
-Rcov::RcovTask.new(:test => [:clean, 'ci:setup:testunit']) do |t|
+Rcov::RcovTask.new(:test => [:clean, :clobber, 'ci:setup:testunit']) do |t|
   t.libs << "tests"
   t.test_files = FileList['tests/unit/**/*_test.rb']
   t.output_dir = "reports/coverage"
