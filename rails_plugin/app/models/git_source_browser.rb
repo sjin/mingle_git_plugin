@@ -16,9 +16,9 @@ end
 
 class Node
 
-  attr_reader :path
-  attr_reader :commit_id
-  attr_reader :git_client
+  attr_reader :path, :commit_id, :git_client
+  attr_writer :git_object_id
+  
   alias :display_path :path
 
   def initialize(path, commit_id, git_client, git_object_id=nil)
@@ -30,6 +30,10 @@ class Node
   
   def git_object_id
     @git_object_id ||= @git_client.ls_tree(path, commit_id)[path][:object_id]
+  end
+  
+  def last_log_entry_loaded?
+    @last_log_entry
   end
   
   def last_log_entry
@@ -67,6 +71,7 @@ class Node
   def parent_display_path
     parent_path_components.join('/')
   end
+  
 end
 
 class DirNode < Node

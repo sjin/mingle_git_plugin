@@ -4,9 +4,18 @@
 class GitSourceController < ApplicationController
   
   def load_latest_info
-    node = @project.repository_node(params[:path], params[:commit_id])
+    commit_id = params[:commit_id]
+    
+    nodes = params[:nodes].collect do |path, git_object_id|
+      node = @project.repository_node(path, commit_id)
+      node.git_object_id = git_object_id
+      node
+    end
+    
     render(:update) do |page|
-      page.replace_html "node_#{node.git_object_id}", :partial => 'node_table_row_with_detail', :locals => {:node => node, :view_revision => params[:commit_id] }
+      nodes.each do |node|
+        page.replace_html "node_#{node.git_object_id}", :partial => 'node_table_row_with_detail', :locals => {:node => node, :view_revision => commit_id }
+      end
     end
   end
 end

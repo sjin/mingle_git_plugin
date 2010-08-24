@@ -1,14 +1,11 @@
-<tr class="<%= cycle('even', 'odd')%>" id="node_<%= node.git_object_id %>" >
+<tr class=" <%= cycle('even', 'odd')%>" id="node_<%= node.git_object_id %>" >
 	<td> <% if node.dir? -%>
 		<%= link_to node.name, {:path => node.path_components, :rev => view_revision}, {:class => 'folder node-link'} %>
 		<% else -%>
 		<%= link_to node.name, {:path => node.path_components, :rev => view_revision}, { :class => 'file node-link'} %>
 		<% end -%>
 	</td>
-  <td colspan="4" style="text-align:right">
-    <%= link_to_remote "load latest information",
-      {:url => {:controller => 'git_source', :action => 'load_latest_info', :commit_id => node.commit_id, :path => node.path} },
-      {:style => "margin-right: 2em"}
-    %>
+  <td colspan="4" style="text-align:center">
+    <%= image_tag("spinner.gif") %>
   </td>
 </tr>

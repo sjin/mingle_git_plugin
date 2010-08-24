@@ -4,3 +4,19 @@
 <th>Most Recent Changeset</th>
 <th>Description</th>
 
+<% 
+  nodes =  @children.select { |node| !node.last_log_entry_loaded? }
+  query_hash  = nodes.inject({}) do |result, node| 
+    result[node.path] = node.git_object_id
+    result
+  end
+ %>
+
+<% javascript_with_rescue do %>
+  
+  new Ajax.Request('<%=raw url_for(:controller => 'git_source', :action => 'load_latest_info', :commit_id => @view_revision )%>', {
+    method: 'post',
+    parameters: '<%=raw({:nodes => query_hash}.to_query) %>'
+  });
+
+<% end -%>
