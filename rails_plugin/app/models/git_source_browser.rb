@@ -17,15 +17,15 @@ end
 class Node
 
   attr_reader :path, :commit_id, :git_client
-  attr_writer :git_object_id
   
   alias :display_path :path
 
-  def initialize(path, commit_id, git_client, git_object_id=nil)
+  def initialize(path, commit_id, git_client, git_object_id=nil, last_log_entry=nil)
     @path = path.gsub(/\/$/, '')
     @commit_id = commit_id
     @git_client = git_client
     @git_object_id = git_object_id
+    @last_log_entry = last_log_entry || {} 
   end
   
   def git_object_id
@@ -33,11 +33,11 @@ class Node
   end
   
   def last_log_entry_loaded?
-    @last_log_entry
+    @last_log_entry.empty?
   end
   
   def last_log_entry
-    @last_log_entry ||= @git_client.log_for_path(@commit_id, @path).first
+    @last_log_entry
   end
   
   def name
@@ -76,9 +76,9 @@ end
 
 class DirNode < Node
 
-  def children
-    git_client.ls_tree(path, commit_id, true).collect do |child_path, desc|
-      node = desc[:type] == :tree ? DirNode.new(child_path, commit_id, git_client, desc[:object_id]) : FileNode.new(child_path, commit_id, git_client, desc[:object_id])
+  def children(with_last_rev=false)    
+    git_client.ls_tree(path, commit_id, true, with_last_rev).collect do |child_path, desc|
+      node = desc[:type] == :tree ? DirNode.new(child_path, commit_id, git_client, desc[:object_id], desc[:last_rev]) : FileNode.new(child_path, commit_id, git_client, desc[:object_id], desc[:last_rev])
     end
   end
   

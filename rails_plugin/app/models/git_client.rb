@@ -1,13 +1,21 @@
 # Copyright (c) 2010 ThoughtWorks Inc. (http://thoughtworks.com)
 # Licenced under the Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0.txt)
 
+
 require 'time'
 require 'fileutils'
 require 'open3'
-class GitClient
 
+# require 'rubygems'
+# require 'active_support'
+# require 'pp'
+class GitClient
+  
+  FOUR_SPACES = ' '*4
+  
   cattr_accessor :logging_enabled
-  @@logging_enabled = (ENV["ENABLE_GIT_CLIENT_LOGGING"] && ENV["ENABLE_GIT_CLIENT_LOGGING"].downcase == 'true')
+
+  @@logging_enabled = true #(ENV["ENABLE_GIT_CLIENT_LOGGING"] && ENV["ENABLE_GIT_CLIENT_LOGGING"].downcase == 'true')
   
   def initialize(master_path, clone_path)
     @master_path = master_path
@@ -46,14 +54,14 @@ class GitClient
     git_log("log --reverse #{window}", limit, &exclude_block)
   end
 
-  def log_for_path(at_commit_id, *paths)
-    at_commit_id = sanitize(at_commit_id)
-    cmds = paths.collect do |path|
-      "log #{at_commit_id} -1 -- \"#{path}\""
-    end
-    
-    git_log(cmds)
-  end
+  # def log_for_path(at_commit_id, *paths)
+  #   at_commit_id = sanitize(at_commit_id)
+  #   cmds = paths.collect do |path|
+  #     "log #{at_commit_id} -1 -- \"#{path}\""
+  #   end
+  #   
+  #   git_log(cmds)
+  # end
 
   def git_patch_for(commit_id, git_patch)
     commit_id = sanitize(commit_id)
@@ -88,7 +96,7 @@ class GitClient
     (tree.size == 1) && (tree[path][:type] == :tree)
   end
 
-  def ls_tree(path, commit_id, children = false)
+  def ls_tree(path, commit_id, children = false, with_detail=false)
     commit_id = sanitize(commit_id)
     tree = {}
     path += '/' if children && !root_path?(path)
@@ -100,10 +108,17 @@ class GitClient
         tree[path] = {:type => type, :object_id => object_id}
       end
     end
+    
+    if with_detail
+      tree = load_latest_log(path, tree, commit_id)
+    end
+    
     tree
   end
   
   private
+  
+
   
   def root_path?(path)
     path == '.' || path.blank?
@@ -131,6 +146,7 @@ class GitClient
       Open3.popen3(command) do |stdin, stdout, stderr|
         stdin.close
         yield(stdout) if block_given?
+        stdout.close
         error = stderr.readlines
       end
     ensure
@@ -162,7 +178,6 @@ class GitClient
       stdout.each_line do |line|
         line.chomp!
         if line.starts_with?('commit')
-          # log_entry[:description].strip! if log_entry[:description]
           return strip_desc(result) if limit && result.size == limit
           log_entry = {}
           log_entry[:commit_id] = line.sub(/commit /, '')
@@ -192,4 +207,43 @@ class GitClient
     commit_id_ish = commit_id_ish.downcase
     commit_id_ish == 'head' ? 'HEAD' : commit_id_ish
   end
+  
+  def load_latest_log(path, tree, commit_id)
+    commit_id = sanitize(commit_id)
+    paths = tree.keys
+    git("whatchanged #{commit_id} ") do |stdout|
+      log_entry = {}
+      stdout.each_line do |line|
+        line.chomp!
+        if line.starts_with?('commit')
+          log_entry = {}
+          log_entry[:commit_id] = line.sub(/commit /, '')
+          log_entry[:description] = ''
+        elsif line.starts_with?('Author:')
+          log_entry[:author] = line.sub(/Author: /, '')
+        elsif line.starts_with?('Date:')
+          log_entry[:time] = Time.parse(line.sub(/Date:   /, ''))
+        elsif line =~ /^:.*\t(.*)$/
+          changed_path = $1
+          if paths.include?(changed_path)
+            tree[changed_path][:last_rev] = log_entry
+            paths.delete(changed_path)
+            break if paths.empty?
+          end
+          # if find_path = paths.find { |p| changed_path.start_with?("#{p}/") }
+          #   tree[find_path][:last_rev] = log_entry
+          #   paths.delete(find_path)
+          #   break if paths.empty?
+          # end
+        else 
+          log_entry[:description] << line[4..-1] + "\n" unless line.empty?
+        end
+      end
+    end
+    tree
+  end
 end
+
+# client = GitClient.new('/tmp/mingle_git_plugin.git', '/Users/ThoughtWorks/projects/tw/mingle/git/mingle_git_plugin')
+# 
+# pp client.ls_tree('.', 'master', true, true)
