@@ -8,8 +8,8 @@ class GitSourceBrowser
   end
 
   def node(path, commit_id)
-    is_dir = @git_client.dir?(path, commit_id)
-    is_dir ? DirNode.new(path, commit_id, @git_client) : FileNode.new(path, commit_id, @git_client)
+    node_class = @git_client.dir?(path, commit_id) ? DirNode : FileNode
+    node_class.new(path, commit_id, @git_client)
   end
  
 end
@@ -20,12 +20,12 @@ class Node
   
   alias :display_path :path
 
-  def initialize(path, commit_id, git_client, git_object_id=nil, last_log_entry=nil)
+  def initialize(path, commit_id, git_client, git_object_id=nil, last_commit_id=nil)
     @path = path.gsub(/\/$/, '')
     @commit_id = commit_id
     @git_client = git_client
     @git_object_id = git_object_id
-    @last_log_entry = last_log_entry || {} 
+    @last_commit_id = last_commit_id
   end
   
   def git_object_id
@@ -33,11 +33,15 @@ class Node
   end
   
   def last_log_entry_loaded?
-    @last_log_entry.empty?
+    @last_log_entry
   end
   
   def last_log_entry
-    @last_log_entry
+    @last_log_entry || {}
+  end
+  
+  def load_last_log_entry    
+    @last_log_entry = @git_client.log_for_rev(@last_commit_id)
   end
   
   def name
@@ -76,9 +80,10 @@ end
 
 class DirNode < Node
 
-  def children(with_last_rev=false)    
-    git_client.ls_tree(path, commit_id, true, with_last_rev).collect do |child_path, desc|
-      node = desc[:type] == :tree ? DirNode.new(child_path, commit_id, git_client, desc[:object_id], desc[:last_rev]) : FileNode.new(child_path, commit_id, git_client, desc[:object_id], desc[:last_rev])
+  def children    
+    git_client.ls_tree(path, commit_id, true).collect do |child_path, desc|
+      node_class = desc[:type] == :tree ? DirNode : FileNode      
+      node_class.new(child_path, commit_id, git_client, desc[:object_id], desc[:last_commit_id])
     end
   end
   

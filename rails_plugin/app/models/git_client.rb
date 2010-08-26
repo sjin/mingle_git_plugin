@@ -9,13 +9,11 @@ require 'open3'
 # require 'rubygems'
 # require 'active_support'
 # require 'pp'
-class GitClient
-  
-  FOUR_SPACES = ' '*4
-  
+class GitClient  
   cattr_accessor :logging_enabled
+  attr_reader :clone_path
 
-  @@logging_enabled = true #(ENV["ENABLE_GIT_CLIENT_LOGGING"] && ENV["ENABLE_GIT_CLIENT_LOGGING"].downcase == 'true')
+  @@logging_enabled = (ENV["ENABLE_GIT_CLIENT_LOGGING"] && ENV["ENABLE_GIT_CLIENT_LOGGING"].downcase == 'true')
   
   def initialize(master_path, clone_path)
     @master_path = master_path
@@ -24,6 +22,7 @@ class GitClient
       @clone_path += '/' + master_path.split('/').last.gsub(/.git$/,'') + '.git'
     end
     @clone_path = File.expand_path(@clone_path) if @clone_path
+    @file_index = GitFileIndex.new(self)
   end
 
   def try_to_connect
@@ -31,7 +30,8 @@ class GitClient
   end
   
   def pull
-    git("fetch -q")
+    git("fetch")
+    @file_index.update
   end
 
   def ensure_local_clone
@@ -53,15 +53,6 @@ class GitClient
     window = from.blank? ? to : "#{from}..#{to}"
     git_log("log --reverse #{window}", limit, &exclude_block)
   end
-
-  # def log_for_path(at_commit_id, *paths)
-  #   at_commit_id = sanitize(at_commit_id)
-  #   cmds = paths.collect do |path|
-  #     "log #{at_commit_id} -1 -- \"#{path}\""
-  #   end
-  #   
-  #   git_log(cmds)
-  # end
 
   def git_patch_for(commit_id, git_patch)
     commit_id = sanitize(commit_id)
@@ -96,7 +87,7 @@ class GitClient
     (tree.size == 1) && (tree[path][:type] == :tree)
   end
 
-  def ls_tree(path, commit_id, children = false, with_detail=false)
+  def ls_tree(path, commit_id, children = false)
     commit_id = sanitize(commit_id)
     tree = {}
     path += '/' if children && !root_path?(path)
@@ -109,20 +100,9 @@ class GitClient
       end
     end
     
-    if with_detail
-      tree = load_latest_log(path, tree, commit_id)
-    end
-    
-    tree
+    load_latest_commit_id(tree, commit_id)
   end
   
-  private
-  
-
-  
-  def root_path?(path)
-    path == '.' || path.blank?
-  end
   
   def git(command, &block)
     
@@ -137,6 +117,14 @@ class GitClient
     execute(command, &block)
   end
   
+  private
+
+  
+  def root_path?(path)
+    path == '.' || path.blank?
+  end
+  
+  
   def execute(command, &block)
     start = Time.now
     puts "Executing command:\n#{command}" if GitClient.logging_enabled
@@ -145,8 +133,12 @@ class GitClient
     begin
       Open3.popen3(command) do |stdin, stdout, stderr|
         stdin.close
+        
         yield(stdout) if block_given?
-        stdout.close
+        
+        stdout.readlines if !stdout.closed? && !block_given?
+        stdout.close 
+
         error = stderr.readlines
       end
     ensure
@@ -208,42 +200,14 @@ class GitClient
     commit_id_ish == 'head' ? 'HEAD' : commit_id_ish
   end
   
-  def load_latest_log(path, tree, commit_id)
+  def load_latest_commit_id(tree, commit_id)
     commit_id = sanitize(commit_id)
     paths = tree.keys
-    git("whatchanged #{commit_id} ") do |stdout|
-      log_entry = {}
-      stdout.each_line do |line|
-        line.chomp!
-        if line.starts_with?('commit')
-          log_entry = {}
-          log_entry[:commit_id] = line.sub(/commit /, '')
-          log_entry[:description] = ''
-        elsif line.starts_with?('Author:')
-          log_entry[:author] = line.sub(/Author: /, '')
-        elsif line.starts_with?('Date:')
-          log_entry[:time] = Time.parse(line.sub(/Date:   /, ''))
-        elsif line =~ /^:.*\t(.*)$/
-          changed_path = $1
-          if paths.include?(changed_path)
-            tree[changed_path][:last_rev] = log_entry
-            paths.delete(changed_path)
-            break if paths.empty?
-          end
-          # if find_path = paths.find { |p| changed_path.start_with?("#{p}/") }
-          #   tree[find_path][:last_rev] = log_entry
-          #   paths.delete(find_path)
-          #   break if paths.empty?
-          # end
-        else 
-          log_entry[:description] << line[4..-1] + "\n" unless line.empty?
-        end
-      end
+    @file_index.last_commit_id(paths, commit_id).each_with_index do |path_commit_id, i|
+      tree[paths[i]][:last_commit_id] = path_commit_id
     end
+    
     tree
   end
 end
 
-# client = GitClient.new('/tmp/mingle_git_plugin.git', '/Users/ThoughtWorks/projects/tw/mingle/git/mingle_git_plugin')
-# 
-# pp client.ls_tree('.', 'master', true, true)

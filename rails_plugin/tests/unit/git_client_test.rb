@@ -70,43 +70,17 @@ class GitClientTest < Test::Unit::TestCase
     assert_equal '19df35cdb7d0219cb2b1adfe791d7b27bf14fda8', git_client.log_for_rev('head')[:commit_id]
   end
   
-  def test_should_get_most_log_entry_about_path
+  def test_ls_tree_should_include_last_commit_id_that_path_changed
     git_client = TestRepositoryFactory.create_client_from_bundle('hello')
+    git_client.pull
     
-    log_entries = git_client.log_for_path('9f953d7cfd6eff8f79e5e383e7bca4b0cf89e13a', 'hello.c')
+    tree = git_client.ls_tree('', '9f953d7cfd6eff8f79e5e383e7bca4b0cf89e13a')
+    assert_equal '9f953d7cfd6eff8f79e5e383e7bca4b0cf89e13a', tree['hello.c'][:last_commit_id]
+    assert_equal '8cf18930f5c6f457cec89011dfe45d8aff07d870', tree['Makefile'][:last_commit_id]
     
-    log_entry = log_entries.first
-    assert_equal 1, log_entries.size
-    assert_equal '9f953d7cfd6eff8f79e5e383e7bca4b0cf89e13a', log_entry[:commit_id]
-    assert_equal "Bryan O'Sullivan <bos@serpentine.com>", log_entry[:author]
-    assert_equal "Trim comments.", log_entry[:description]
-    
-    
-    log_entries = git_client.log_for_path('8cf18930f5c6f457cec89011dfe45d8aff07d870', 'hello.c')
-    
-    log_entry = log_entries.first
-    assert_equal 1, log_entries.size
-    assert_equal 'b5ad6f93ec7252f8acd40a954451f3c25615a699', log_entry[:commit_id]
-    assert_equal "Bryan O'Sullivan <bos@serpentine.com>", log_entry[:author]
-    assert_equal "Introduce a typo into hello.c.", log_entry[:description]
-  end
-  
-  def test_should_get_most_log_entry_about_multiple_path
-    git_client = TestRepositoryFactory.create_client_from_bundle('hello')
-    
-    log_entries = git_client.log_for_path('9f953d7cfd6eff8f79e5e383e7bca4b0cf89e13a', 'hello.c', 'Makefile')
-    assert_equal 2, log_entries.size
-    
-    log_entry = log_entries.first
-    
-    assert_equal '9f953d7cfd6eff8f79e5e383e7bca4b0cf89e13a', log_entry[:commit_id]
-    assert_equal "Bryan O'Sullivan <bos@serpentine.com>", log_entry[:author]
-    assert_equal "Trim comments.", log_entry[:description]
-    
-    log_entry = log_entries.last
-    assert_equal '8cf18930f5c6f457cec89011dfe45d8aff07d870', log_entry[:commit_id]
-    assert_equal "Bryan O'Sullivan <bos@serpentine.com>", log_entry[:author]
-    assert_equal "Get make to generate the final binary from a .o file.", log_entry[:description]
+    tree = git_client.ls_tree('', '8cf18930f5c6f457cec89011dfe45d8aff07d870')
+    assert_equal 'b5ad6f93ec7252f8acd40a954451f3c25615a699', tree['hello.c'][:last_commit_id]
+    assert_equal '8cf18930f5c6f457cec89011dfe45d8aff07d870', tree['Makefile'][:last_commit_id]    
   end
   
   def test_ls_tree_can_list_all_children_at_root_node

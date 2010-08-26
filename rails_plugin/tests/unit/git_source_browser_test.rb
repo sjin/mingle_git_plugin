@@ -74,7 +74,9 @@ class GitSourceBrowserTest < Test::Unit::TestCase
     setup_repos('hello')
 
     dir = @source_browser.node('.', "8cf18930f5c6f457cec89011dfe45d8aff07d870")
+    @source_browser.instance_variable_get("@git_client").pull
     children = dir.children
+    children.map(&:load_last_log_entry)
     hello_c_file = children.find{|c| c.path == 'hello.c'}
     assert_equal "Bryan O'Sullivan <bos@serpentine.com>", hello_c_file.most_recent_committer
     assert_equal "Introduce a typo into hello.c.", hello_c_file.most_recent_commit_desc
