@@ -32,16 +32,6 @@ class Node
     @git_object_id ||= @git_client.ls_tree(path, commit_id)[path][:object_id]
   end
   
-  def last_log_entry
-    @last_log_entry || {:commit_id => @last_commit_id}
-  end
-  
-  def load_last_log_entry
-    if rev = Project.current.revisions.find_by_identifier(@last_commit_id)
-      @last_log_entry = {:author => rev.user, :time => rev.commit_time, :description => rev.commit_message, :commit_id => @last_commit_id}
-    end
-  end
-  
   def name
     path.split('/').last
   end
@@ -51,19 +41,19 @@ class Node
   end
   
   def most_recent_committer
-    last_log_entry[:author]
+    nil
   end
   
   def most_recent_commit_time
-    last_log_entry[:time]
+    nil
   end
   
   def most_recent_commit_desc
-    last_log_entry[:description]
+    nil
   end
   
   def most_recent_changeset_identifier
-    last_log_entry[:commit_id]
+    @last_commit_id
   end
   
   def parent_path_components

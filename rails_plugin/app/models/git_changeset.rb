@@ -9,12 +9,6 @@ class GitChangeset
   attr_reader :author
   attr_reader :time
   attr_accessor :number
-  
-  class << self
-    def short_identifier(identifier)
-      identifier[0...12]
-    end
-  end
 
   def initialize(attributes, repository)
     @repository = repository

@@ -68,10 +68,6 @@ class GitChangesetTest < Test::Unit::TestCase
     assert_equal 'this is a change', changeset.description
   end
 
-  def test_short_identifier
-    assert_equal '123456789012', GitChangeset.short_identifier('1234567890' * 4)
-  end
-
   def assert_expected_action(expected_action, change_type)
     git_change = GitGitChange::NotDiffable.new(nil, true, change_type, nil)
     change = GitChange.new(git_change, 1)

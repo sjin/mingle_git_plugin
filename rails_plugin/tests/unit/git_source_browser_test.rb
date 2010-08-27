@@ -130,8 +130,4 @@ int main(int argc, char **argv)
     assert @source_browser.node('WorstestEver.png', 'master').binary?
     assert !@source_browser.node('some_stuff.txt', 'master').binary?
   end
-  
-  def test_last_log_entry_should_be_populated_to_cache_on_first_load
-    
-  end
 end

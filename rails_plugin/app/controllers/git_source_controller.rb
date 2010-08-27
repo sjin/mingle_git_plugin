@@ -4,14 +4,13 @@
 class GitSourceController < ApplicationController
   
   def load_latest_info
-    # profile do
-    parent = @project.repository_node(params[:path], params[:commit_id])
+    revisions = @project.revisions.find(:all, :conditions => ["identifier in (?)", params[:commits]])
     render(:update) do |page|
-      parent.children.each do |node|
-        node.load_last_log_entry
-        page.replace_html "node_#{node.git_object_id}", :partial => 'node_table_row_with_detail', :locals => {:node => node, :view_revision => params[:commit_id] }
+      revisions.each do |rev|
+        page.select("#svn_browser td.#{rev.identifier}").each do |element|
+          page.replace(element, :partial => 'node_table_row_with_detail', :locals => { :revision => rev })
+        end
       end
     end
-    # end
   end
 end

@@ -5,7 +5,8 @@
 		<%= link_to node.name, {:path => node.path_components, :rev => view_revision}, { :class => 'file node-link'} %>
 		<% end -%>
 	</td>
-  <td colspan="4" style="text-align:center">
+	
+  <td colspan="4" style="text-align:center" class="<%= node.last_commit_id %>">
     <%= image_tag("spinner.gif") %>
   </td>
 </tr>

@@ -7,9 +7,10 @@
 
 <% javascript_with_rescue do %>
   new Ajax.Request(
-    '<%= raw(url_for(:controller => 'git_source', :action => 'load_latest_info', :commit_id => @node.commit_id, :path => @node.path )) %>',
+    '<%= raw(url_for(:controller => 'git_source', :action => 'load_latest_info')) %>',
     {
-      method: 'post'
+      method: 'post',
+      parameters: '<%=raw @children.collect(&:last_commit_id).uniq.to_query(:commits) %>'
     }
   );
 
