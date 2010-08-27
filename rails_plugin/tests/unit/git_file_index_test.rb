@@ -29,6 +29,14 @@ class GitFileIndexTest < Test::Unit::TestCase
       index.last_commit_id(['hello.c', 'Makefile'], "master")
   end
   
+  def test_get_last_commit_id_for_folders
+    index = GitFileIndex.new(TestRepositoryFactory.create_client_from_bundle("one_changeset_with_subdirs"))
+    index.update
+    
+    assert_equal ["58eec0e41c32000f90dfa7c8f18d0391b4165013", "58eec0e41c32000f90dfa7c8f18d0391b4165013"],
+      index.last_commit_id(['src', 'tests'], "head")
+  end
+  
   # def test_benchmark_for_rails_repo
   #     file_list = Dir["/Users/ThoughtWorks/code/rails/*"].collect { |f| File.basename(f) }
   #     benchmark("http://github.com/rails/rails.git", file_list, "4a90ecb3adff8426aeddee0594c2b68f408e4af1")

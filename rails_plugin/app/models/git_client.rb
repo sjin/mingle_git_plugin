@@ -6,12 +6,9 @@ require 'time'
 require 'fileutils'
 require 'open3'
 
-# require 'rubygems'
-# require 'active_support'
-# require 'pp'
 class GitClient  
   cattr_accessor :logging_enabled
-  attr_reader :clone_path
+  attr_reader :clone_path, :file_index
 
   @@logging_enabled = (ENV["ENABLE_GIT_CLIENT_LOGGING"] && ENV["ENABLE_GIT_CLIENT_LOGGING"].downcase == 'true')
   
@@ -30,7 +27,7 @@ class GitClient
   end
   
   def pull
-    git("fetch")
+    git("fetch -q")
     @file_index.update
   end
 

@@ -6,9 +6,11 @@
 
 
 <% javascript_with_rescue do %>
-  
-  new Ajax.Request('<%=raw url_for(:controller => 'git_source', :action => 'load_latest_info', :commit_id => @view_revision, :path => '.' )%>', {
-    method: 'post'
-  });
+  new Ajax.Request(
+    '<%= raw(url_for(:controller => 'git_source', :action => 'load_latest_info', :commit_id => @node.commit_id, :path => @node.path )) %>',
+    {
+      method: 'post'
+    }
+  );
 
 <% end -%>

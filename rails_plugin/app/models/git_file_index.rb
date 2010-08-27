@@ -38,8 +38,9 @@ class GitFileIndex
           tree = ""
           File.dirname(file_name).split('/').each do |part|
             next if part == '.'
-            tree += part + '/'
+            tree += part
             commit_list_for(tree).push(current_commit_index)
+            tree += '/'
           end
 
           commit_list_for(file_name).push(current_commit_index)
@@ -65,7 +66,7 @@ class GitFileIndex
   end
   
   def update_window
-    @commits.empty? ? "--all" : "#{commits.last}..head"
+    @commits.empty? ? "--all" : "#{commits.last}..HEAD"
   end
   
   def commit_list_for(path)

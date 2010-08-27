@@ -16,7 +16,7 @@ end
 
 class Node
 
-  attr_reader :path, :commit_id, :git_client
+  attr_reader :path, :commit_id, :last_commit_id, :git_client
   
   alias :display_path :path
 
@@ -32,16 +32,14 @@ class Node
     @git_object_id ||= @git_client.ls_tree(path, commit_id)[path][:object_id]
   end
   
-  def last_log_entry_loaded?
-    @last_log_entry
-  end
-  
   def last_log_entry
-    @last_log_entry || {}
+    @last_log_entry || {:commit_id => @last_commit_id}
   end
   
-  def load_last_log_entry    
-    @last_log_entry = @git_client.log_for_rev(@last_commit_id)
+  def load_last_log_entry
+    if rev = Project.current.revisions.find_by_identifier(@last_commit_id)
+      @last_log_entry = {:author => rev.user, :time => rev.commit_time, :description => rev.commit_message, :commit_id => @last_commit_id}
+    end
   end
   
   def name
@@ -80,7 +78,7 @@ end
 
 class DirNode < Node
 
-  def children    
+  def children
     git_client.ls_tree(path, commit_id, true).collect do |child_path, desc|
       node_class = desc[:type] == :tree ? DirNode : FileNode      
       node_class.new(child_path, commit_id, git_client, desc[:object_id], desc[:last_commit_id])

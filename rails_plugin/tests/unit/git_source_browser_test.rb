@@ -76,17 +76,17 @@ class GitSourceBrowserTest < Test::Unit::TestCase
     dir = @source_browser.node('.', "8cf18930f5c6f457cec89011dfe45d8aff07d870")
     @source_browser.instance_variable_get("@git_client").pull
     children = dir.children
-    children.map(&:load_last_log_entry)
     hello_c_file = children.find{|c| c.path == 'hello.c'}
-    assert_equal "Bryan O'Sullivan <bos@serpentine.com>", hello_c_file.most_recent_committer
-    assert_equal "Introduce a typo into hello.c.", hello_c_file.most_recent_commit_desc
-    assert_equal Time.parse('Sat Aug 16 22:05:04 -0700 2008'), hello_c_file.most_recent_commit_time
+    assert_equal "b5ad6f93ec7252f8acd40a954451f3c25615a699", hello_c_file.last_commit_id
+    # assert_equal "Bryan O'Sullivan <bos@serpentine.com>", hello_c_file.most_recent_committer
+    # assert_equal "Introduce a typo into hello.c.", hello_c_file.most_recent_commit_desc
+    # assert_equal Time.parse('Sat Aug 16 22:05:04 -0700 2008'), hello_c_file.most_recent_commit_time
     
     makefile = children.find{|c| c.path == 'Makefile'}
-    assert_equal "Bryan O'Sullivan <bos@serpentine.com>", makefile.most_recent_committer
-    assert_equal "Get make to generate the final binary from a .o file.", makefile.most_recent_commit_desc
-    assert_equal Time.parse('Sat Aug 16 22:08:02 -0700 2008'), makefile.most_recent_commit_time
-    
+    assert_equal "8cf18930f5c6f457cec89011dfe45d8aff07d870", makefile.last_commit_id
+    # assert_equal "Bryan O'Sullivan <bos@serpentine.com>", makefile.most_recent_committer
+    # assert_equal "Get make to generate the final binary from a .o file.", makefile.most_recent_commit_desc
+    # assert_equal Time.parse('Sat Aug 16 22:08:02 -0700 2008'), makefile.most_recent_commit_time
   end
   
   def test_can_get_file_contents_from_fixed_node
