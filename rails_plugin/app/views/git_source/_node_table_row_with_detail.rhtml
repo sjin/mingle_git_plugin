@@ -1,4 +1,5 @@
 <td><%= time_ago_in_words(revision.commit_time) %></td>
 <td><%= revision.user %></td>
 <td><%= link_to "#{revision.identifier[0..5]}", changeset_url(:rev => revision.identifier) %></td>
-<td><%= replace_card_links(h(truncate(revision.commit_message, :length => 255))) %></td>
+<% commit_messages = revision.commit_message.split(/\n\n/)  %>
+<td><%= replace_card_links(h(commit_messages.first)) %><%= "..." if commit_messages.size > 1 %></td>
