@@ -6,6 +6,10 @@ class GitSourceController < ApplicationController
   def load_latest_info
     revisions = @project.revisions.find(:all, :conditions => ["identifier in (?)", params[:commits]])
     render(:update) do |page|
+      page.select("#svn_browser td.to-be-replaced").each do |element|
+        element.innerHTML = "Still caching..."
+      end
+      
       revisions.each do |rev|
         page.select("#svn_browser td.#{rev.identifier}").each do |element|
           page.replace(element, :partial => 'node_table_row_with_detail', :locals => { :revision => rev })
