@@ -66,7 +66,7 @@ class GitFileIndex
   end
   
   def update_window
-    @commits.empty? ? "--all" : "#{commits.last}..HEAD"
+    @commits.empty? ? "HEAD" : "#{commits.last}..HEAD"
   end
   
   def commit_list_for(path)

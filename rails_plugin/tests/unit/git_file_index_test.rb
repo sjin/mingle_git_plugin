@@ -40,7 +40,7 @@ class GitFileIndexTest < Test::Unit::TestCase
   # def test_benchmark_for_rails_repo
   #     file_list = Dir["/Users/ThoughtWorks/code/rails/*"].collect { |f| File.basename(f) }
   #     benchmark("http://github.com/rails/rails.git", file_list, "4a90ecb3adff8426aeddee0594c2b68f408e4af1")
-  #   end
+  # end
   #   
   #   def test_benchmark_for_git_repo
   #     file_list = Dir["/Users/ThoughtWorks/code/git/*"].collect { |f| File.basename(f) }
