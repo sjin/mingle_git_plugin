@@ -3,10 +3,21 @@
 
 COMPATIBLE_MINGLE_VERSIONS = ['3_2', 'unstable_3_2', 'unsupported-developer-build']
 
+
+def load_all_files_in(dir)
+  Dir[File.join(File.dirname(__FILE__), dir, '**', '*.rb')].each do |f|
+    require f
+  end
+end
+
 if COMPATIBLE_MINGLE_VERSIONS.include?(MINGLE_VERSION)
 
   begin
-    require File.expand_path(File.join(File.dirname(__FILE__), 'app/models/git_configuration'))
+    
+    ['app/controllers', 'app/models', 'config'].each do |dir|
+      load_all_files_in(dir)
+    end
+    
     MinglePlugins::Source.register(GitConfiguration)
   rescue Exception => e
     ActiveRecord::Base.logger.error "Unable to register GitConfiguration. Root cause: #{e}"
