@@ -51,6 +51,16 @@ task :deploy do
   end
 end
 
+desc "Create distribution"
+task :dist => [:test] do
+  rm_rf('dist')
+  mkdir_p('dist/mingle_git_plugin')
+  ['app', 'config', 'db', 'init.rb'].each do |entry|
+    cp_r(entry, 'dist/mingle_git_plugin')
+  end
+  system('cd dist && tar czvf mingle_git_plugin.tar.gz mingle_git_plugin && rm -rf mingle_git_plugin')
+end
+
 task :deploy_windows => [:deploy] do
   puts "**** Stopping mingle..."
   `net stop mingleserver_3_2`
