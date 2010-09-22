@@ -4,6 +4,10 @@
 require File.expand_path(File.join(File.dirname(__FILE__), '..', 'test_helper'))
 
 class GitRepositoryTest < Test::Unit::TestCase
+  
+  def teardown
+    Project.current = nil
+  end
 
   def test_empty_returns_true_when_no_changesets_in_repos
     repository = TestRepositoryFactory.create_repository_without_source_browser('empty_rev')
@@ -43,6 +47,33 @@ class GitRepositoryTest < Test::Unit::TestCase
     assert_equal "mpm@selenic.com <mpm@selenic.com>", changeset.author
     assert_equal "Create a makefile", changeset.description
     assert_equal 'Fri Aug 26 08:21:28 UTC 2005', changeset.time.utc.to_s
+  end
+  
+  def test_changeset_finds_changeset_by_mingle_managed_revision_number
+    project = Project.new
+    Project.current = project
+    
+    # this ugly code stubs the act of the plugin asking the mingle
+    # project to find the revision model by number.  this needs to be
+    # sorted in mingle proper. the view caching whould do its work
+    # via the revision identifier and not the number.
+    project_revisions = Object.new
+    def project_revisions.find_by_number(number)
+      identifiers = {
+        1 => '2cf7a6a5e25f022ac4b18ce7165661cdc8177013',
+        2 => '23f49e83ecbd82c1dd4884a514a07bd992e102be'
+      }
+      return OpenStruct.new(:number => number, :identifier => identifiers[number])
+    end
+    project.instance_variable_set(:@__project_revisions, project_revisions)
+    def project.revisions
+      @__project_revisions
+    end
+    
+    repository = TestRepositoryFactory.create_repository_without_source_browser('hello')
+    changeset = repository.changeset(2)
+    assert_equal '23f49e83ecbd82c1dd4884a514a07bd992e102be', changeset.commit_id
+    assert_equal 'Create a makefile', changeset.description
   end
 
   def test_next_changesets_returns_empty_array_when_repository_empty

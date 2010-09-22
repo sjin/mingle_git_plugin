@@ -87,8 +87,12 @@ class Project
     "test_project"
   end
   
+  def self.current=(value)
+    @@current = value
+  end
+  
   def self.current
-    nil
+    @@current
   end
   
 end

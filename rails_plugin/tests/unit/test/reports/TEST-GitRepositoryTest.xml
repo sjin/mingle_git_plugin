@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite tests="1" time="0.092776" skipped="0" assertions="2" name="GitRepositoryTest" failures="0" errors="0">
+  <testcase time="0.092327" assertions="2" name="test_changeset_finds_changeset_by_mingle_managed_revision_number">
+  </testcase>
+  <system-out>
+23f49e83ecbd82c1dd4884a514a07bd992e102be
+  </system-out>
+  <system-err>
+  </system-err>
+</testsuite>
