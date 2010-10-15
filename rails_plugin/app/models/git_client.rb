@@ -21,10 +21,6 @@ class GitClient
     @clone_path = File.expand_path(@clone_path) if @clone_path
     @file_index = GitFileIndex.new(self)
   end
-
-  def try_to_connect
-
-  end
   
   def pull
     git("fetch -q")

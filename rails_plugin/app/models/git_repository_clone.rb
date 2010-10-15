@@ -5,7 +5,6 @@ class GitRepositoryClone
     
   def initialize(repository)
     @repository = repository
-    @repository.try_to_connect
   end
 
   def method_missing(method, *args)

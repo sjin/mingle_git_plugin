@@ -13,10 +13,7 @@ class GitRepositoryCloneTest < Test::Unit::TestCase
   end
     
   class RepositoryStub
-    
-    def try_to_connect      
-    end
-        
+            
     def next_revisions(skip_up_to, limit)
     end
     

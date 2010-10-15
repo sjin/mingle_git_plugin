@@ -100,10 +100,6 @@ class GitRepository
     @git_client.ensure_local_clone
   end
   
-  def try_to_connect
-    @git_client.try_to_connect
-  end
-
   def construct_changeset(log_entry)
     GitChangeset.new(log_entry, self)
   end
