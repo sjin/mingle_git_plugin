@@ -67,6 +67,23 @@ ActiveRecord::Migrator.migrate(File.dirname(__FILE__) + '/../db/migrate')
 
 # stub the Mingle Project
 class Project
+  
+  @@instances = {}
+  
+  class << self
+    def register_instance_for_find(project)
+      @@instances[project.id] = project
+    end
+    
+    def clear_find_registry
+      @@instances = {}
+    end
+    
+    def find(*args)
+      @@instances[args.first]
+    end
+  end
+
   def encrypt(text)
     "ENCRYPTED" + text
   end
@@ -95,30 +112,10 @@ class Project
     @@current
   end
   
-end
-
-# PasswordEncryption is a direct copy of Mingle source that allows for the existing
-# SVN and Perforce plugins to have fairly simple controllers. Mixing this module into your
-# configuration allows for the password field to be automatically encrypted by the project.
-#
-# This code is included here because HgConfiguration mixes in this model. This
-# requires that some definition of the module be present in test code in order for tests to run.
-# When deployed to Mingle, Mingle will supply this code.
-module PasswordEncryption
-  def password=(passw)
-    passw = passw.strip
-    if !passw.blank?
-      write_attribute(:password, project.encrypt(passw))
-    else
-      write_attribute(:password, passw)
-    end
+  def repository_configuration
+    nil
   end
-
-  def password
-    ps = super
-    return ps if ps.blank?
-    project.decrypt(ps)
-  end
+  
 end
 
 class TestRepositoryFactory

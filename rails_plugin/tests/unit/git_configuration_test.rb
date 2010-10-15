@@ -7,31 +7,40 @@ class GitConfigurationTest < Test::Unit::TestCase
   
   def setup
     @project_stub = Project.new
+    Project.register_instance_for_find(@project_stub)
+  end
+  
+  def teardown
+    Project.clear_find_registry
   end
   
   def test_password_encrypted_on_create
-    project_stub = Project.new
-    config = GitConfiguration.create!(:repository_path => '/tutorial/hello',
-      :project => project_stub, :username => 'sammy', :password => 'soso')
+    config = GitConfiguration.create_or_update(@project_stub.id, nil, 
+      {:repository_path => '/tutorial/hello',  :username => 'sammy', :password => 'soso'})
     assert_equal 'ENCRYPTEDsoso', config.attributes['password']
   end
   
   def test_password_encrypted_on_save
     config = GitConfiguration.create!(:repository_path => '/tutorial/hello',
-      :project => @project_stub, :username => 'sammy', :password => 'soso')
-    config.password = 'new password'
-    config.save!
+      :project_id => @project_stub.id, :username => 'sammy', :password => 'soso')
+    config = GitConfiguration.create_or_update(@project_stub.id, nil, 
+      {:repository_path => '/tutorial/hello',  :username => 'sammy', :password => 'new password'})
     assert_equal 'ENCRYPTEDnew password', config.attributes['password']
   end
   
-  def test_password_encrypted_on_clone
+  def test_password_not_re_encrypted_on_save
     config = GitConfiguration.create!(:repository_path => '/tutorial/hello',
       :project => @project_stub, :username => 'sammy', :password => 'soso')
     config.save!
+
+    assert_equal 'ENCRYPTEDsoso', config.attributes['password']
+  end
+  
+  def test_password_remains_encrypted_on_clone
+    config = GitConfiguration.create!(:repository_path => '/tutorial/hello',
+      :project => @project_stub, :username => 'sammy', :password => 'soso')
     cloned_config = config.clone
-    cloned_config.project = @project_stub
-    cloned_config.save!
-    assert_equal config.password, cloned_config.password
+    assert_equal 'ENCRYPTEDsoso', cloned_config.attributes['password']
   end
   
   PATHS_WITH_PASSWORD = [ 

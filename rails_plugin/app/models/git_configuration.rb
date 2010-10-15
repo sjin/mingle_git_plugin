@@ -5,7 +5,6 @@ require 'uri'
 class GitConfiguration < ActiveRecord::Base
 
   include RepositoryModelHelper
-  include PasswordEncryption
 
   strip_on_write
 
@@ -13,6 +12,7 @@ class GitConfiguration < ActiveRecord::Base
   validates_presence_of :repository_path
   after_create :remove_cache_dirs
   after_destroy :remove_cache_dirs
+  before_save :encrypt_password
 
   def self.display_name
     "Git"
@@ -36,7 +36,7 @@ class GitConfiguration < ActiveRecord::Base
   def source_browsing_ready?
     initialized?
   end
-
+  
   def validate
     super
     
@@ -57,9 +57,26 @@ class GitConfiguration < ActiveRecord::Base
     end
   end
   
+  # use mingle project's encryption capability to protect password in DB
+  def encrypt_password
+    return unless password_changed?
+    pwd_attr = @attributes['password']
+    if !pwd_attr.blank?
+      write_attribute(:password, project.encrypt(pwd_attr))
+    else
+      write_attribute(:password, pwd_attr)
+    end
+  end
+  
+  # *returns*: decrypted password
+  def password
+    pwd = super
+    return pwd if pwd.blank?
+    project.decrypt(pwd)
+  end
+  
   def repository
     clone_path = File.expand_path(File.join(MINGLE_DATA_DIR, "git", id.to_s))
-    puts "clone_path: #{clone_path}"
     
     scm_client = GitClient.new(repository_path_with_userinfo, clone_path)
     
