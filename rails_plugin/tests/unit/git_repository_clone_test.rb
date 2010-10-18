@@ -25,7 +25,6 @@ class GitRepositoryCloneTest < Test::Unit::TestCase
       GitRepositoryClone.new(@repository, @clone_dir, Project.new)
       fail "Should not have been able to construct!"
     rescue StandardError => e
-      puts e.message
       raise e unless e.message.index("Mingle cannot connect")
     end
   end
