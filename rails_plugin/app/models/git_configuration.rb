@@ -83,7 +83,8 @@ class GitConfiguration < ActiveRecord::Base
     source_browser = GitSourceBrowser.new(scm_client)
     
     repository = GitRepository.new(scm_client, source_browser)
-    GitRepositoryClone.new(repository)
+        
+    GitRepositoryClone.new(repository, clone_path, project, retry_previously_failed_connection)
   end
   
   def repository_location_changed?(configuration_attributes)
@@ -122,6 +123,12 @@ class GitConfiguration < ActiveRecord::Base
   
   def remove_cache_dirs
     FileUtils.rm_rf(File.expand_path(File.join(MINGLE_DATA_DIR, 'git', id.to_s)))
+  end
+  
+  # this is hacktastic, but we'd need to make some design changes to 
+  # the mingle SCM API to avoid this check
+  def retry_previously_failed_connection
+    RUBY_PLATFORM =~ /java/ && java.lang.Thread.current_thread.name == 'cache_revisions'
   end
   
 end
