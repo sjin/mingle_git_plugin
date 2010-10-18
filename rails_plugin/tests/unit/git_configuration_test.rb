@@ -149,32 +149,32 @@ class GitConfigurationTest < Test::Unit::TestCase
   def test_deletes_any_existing_cache_directory_upon_creation
     expected_id = (GitConfiguration.create!(:repository_path => '/foo/bar').id + 1).to_s
     another_id = expected_id.next
-    FileUtils.mkdir_p(File.join(MINGLE_DATA_DIR, 'git', expected_id, 'repository'))
-    FileUtils.touch(File.join(MINGLE_DATA_DIR, 'git', expected_id, 'repository', 'foo.txt'))
-    FileUtils.mkdir_p(File.join(MINGLE_DATA_DIR, 'git', expected_id, 'source_browser_cache'))
-    FileUtils.touch(File.join(MINGLE_DATA_DIR, 'git', expected_id, 'source_browser_cache', 'bar.txt'))
-    FileUtils.mkdir_p(File.join(MINGLE_DATA_DIR, 'git', another_id, 'source_browser_cache'))
-    FileUtils.touch(File.join(MINGLE_DATA_DIR, 'git', another_id, 'source_browser_cache', 'decoy.txt'))
+    FileUtils.mkdir_p(File.join(MINGLE_DATA_DIR, 'mingle_git_plugin_data', expected_id, 'repository'))
+    FileUtils.touch(File.join(MINGLE_DATA_DIR, 'mingle_git_plugin_data', expected_id, 'repository', 'foo.txt'))
+    FileUtils.mkdir_p(File.join(MINGLE_DATA_DIR, 'mingle_git_plugin_data', expected_id, 'source_browser_cache'))
+    FileUtils.touch(File.join(MINGLE_DATA_DIR, 'mingle_git_plugin_data', expected_id, 'source_browser_cache', 'bar.txt'))
+    FileUtils.mkdir_p(File.join(MINGLE_DATA_DIR, 'mingle_git_plugin_data', another_id, 'source_browser_cache'))
+    FileUtils.touch(File.join(MINGLE_DATA_DIR, 'mingle_git_plugin_data', another_id, 'source_browser_cache', 'decoy.txt'))
     GitConfiguration.create!(:repository_path => '/foo/bar')
-    assert !File.exist?(File.join(MINGLE_DATA_DIR, 'git', expected_id, 'repository', 'foo.txt'))
-    assert !File.exist?(File.join(MINGLE_DATA_DIR, 'git', expected_id, 'source_browser_cache', 'bar.txt'))
-    assert File.exist?(File.join(MINGLE_DATA_DIR, 'git', another_id, 'source_browser_cache', 'decoy.txt'))
+    assert !File.exist?(File.join(MINGLE_DATA_DIR, 'mingle_git_plugin_data', expected_id, 'repository', 'foo.txt'))
+    assert !File.exist?(File.join(MINGLE_DATA_DIR, 'mingle_git_plugin_data', expected_id, 'source_browser_cache', 'bar.txt'))
+    assert File.exist?(File.join(MINGLE_DATA_DIR, 'mingle_git_plugin_data', another_id, 'source_browser_cache', 'decoy.txt'))
   end
   
   def test_cache_files_are_deleted_upon_destroy
     config = GitConfiguration.create!(:repository_path => '/foo/bar')
     config_id = config.id.to_s
     another_config_id = GitConfiguration.create!(:repository_path => '/foo/bar').id.to_s
-    FileUtils.mkdir_p(File.join(MINGLE_DATA_DIR, 'git', config_id, 'repository'))
-    FileUtils.mkdir_p(File.join(MINGLE_DATA_DIR, 'git', config_id, 'source_browser_cache'))
-    FileUtils.touch(File.join(MINGLE_DATA_DIR, 'git', config_id, 'repository', 'foo.txt'))
-    FileUtils.touch(File.join(MINGLE_DATA_DIR, 'git', config_id, 'source_browser_cache', 'bar.txt'))
-    FileUtils.mkdir_p(File.join(MINGLE_DATA_DIR, 'git', another_config_id, 'source_browser_cache'))
-    FileUtils.touch(File.join(MINGLE_DATA_DIR, 'git', another_config_id, 'source_browser_cache', 'decoy.txt'))
+    FileUtils.mkdir_p(File.join(MINGLE_DATA_DIR, 'mingle_git_plugin_data', config_id, 'repository'))
+    FileUtils.mkdir_p(File.join(MINGLE_DATA_DIR, 'mingle_git_plugin_data', config_id, 'source_browser_cache'))
+    FileUtils.touch(File.join(MINGLE_DATA_DIR, 'mingle_git_plugin_data', config_id, 'repository', 'foo.txt'))
+    FileUtils.touch(File.join(MINGLE_DATA_DIR, 'mingle_git_plugin_data', config_id, 'source_browser_cache', 'bar.txt'))
+    FileUtils.mkdir_p(File.join(MINGLE_DATA_DIR, 'mingle_git_plugin_data', another_config_id, 'source_browser_cache'))
+    FileUtils.touch(File.join(MINGLE_DATA_DIR, 'mingle_git_plugin_data', another_config_id, 'source_browser_cache', 'decoy.txt'))
     config.destroy
-    assert !File.exist?(File.join(MINGLE_DATA_DIR, 'git', config_id, 'repository', 'foo.txt'))
-    assert !File.exist?(File.join(MINGLE_DATA_DIR, 'git', config_id, 'source_browser_cache', 'bar.txt'))
-    assert File.exist?(File.join(MINGLE_DATA_DIR, 'git', another_config_id, 'source_browser_cache', 'decoy.txt'))
+    assert !File.exist?(File.join(MINGLE_DATA_DIR, 'mingle_git_plugin_data', config_id, 'repository', 'foo.txt'))
+    assert !File.exist?(File.join(MINGLE_DATA_DIR, 'mingle_git_plugin_data', config_id, 'source_browser_cache', 'bar.txt'))
+    assert File.exist?(File.join(MINGLE_DATA_DIR, 'mingle_git_plugin_data', another_config_id, 'source_browser_cache', 'decoy.txt'))
   end
   
   def test_source_browsing_ready_returns_true_when_initialized_is_true

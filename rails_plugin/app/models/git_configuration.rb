@@ -75,16 +75,14 @@ class GitConfiguration < ActiveRecord::Base
     project.decrypt(pwd)
   end
   
-  def repository
-    clone_path = File.expand_path(File.join(MINGLE_DATA_DIR, "mingle_git_plugin", id.to_s))
-    
-    scm_client = GitClient.new(repository_path_with_userinfo, clone_path)
+  def repository    
+    scm_client = GitClient.new(repository_path_with_userinfo, cache_dir)
     
     source_browser = GitSourceBrowser.new(scm_client)
     
     repository = GitRepository.new(scm_client, source_browser)
         
-    GitRepositoryClone.new(repository, clone_path, project, retry_previously_failed_connection)
+    GitRepositoryClone.new(repository, cache_dir, project, retry_previously_failed_connection)
   end
   
   def repository_location_changed?(configuration_attributes)
@@ -122,7 +120,11 @@ class GitConfiguration < ActiveRecord::Base
   private
   
   def remove_cache_dirs
-    FileUtils.rm_rf(File.expand_path(File.join(MINGLE_DATA_DIR, 'git', id.to_s)))
+    FileUtils.rm_rf(cache_dir)
+  end
+  
+  def cache_dir
+    File.expand_path(File.join(MINGLE_DATA_DIR, 'mingle_git_plugin_data', id.to_s))
   end
   
   # this is hacktastic, but we'd need to make some design changes to 
