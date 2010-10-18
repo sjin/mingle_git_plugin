@@ -17,7 +17,6 @@ class GitRepository
   def changeset(commit_id)
     if commit_id && commit_id !~ /^[a-zA-Z0-9]{40}$/ && !['head', 'master'].include?(commit_id.to_s.downcase) && Project.current
       rev = Project.current.revisions.find_by_number(commit_id)
-      puts rev.identifier
       commit_id = rev.identifier if rev
     end
       
