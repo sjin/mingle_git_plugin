@@ -76,7 +76,7 @@ class GitConfiguration < ActiveRecord::Base
   end
   
   def repository
-    clone_path = File.expand_path(File.join(MINGLE_DATA_DIR, "git", id.to_s))
+    clone_path = File.expand_path(File.join(MINGLE_DATA_DIR, "mingle_git_plugin", id.to_s))
     
     scm_client = GitClient.new(repository_path_with_userinfo, clone_path)
     
