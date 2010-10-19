@@ -22,12 +22,12 @@ class GitClient
   end
   
   def pull
-    git("fetch -q")
+    git("fetch -q \"#{@remote_master_info.path}\" refs/heads/master:refs/heads/master")
     @file_index.update
   end
 
   def ensure_local_clone
-    git("clone --mirror \"#{@remote_master_info.path}\" \"#{@clone_path}\"") unless File.file?(@clone_path + '/HEAD')
+    git("clone --bare \"#{@remote_master_info.path}\" \"#{@clone_path}\"") unless File.file?(@clone_path + '/HEAD')
   end
 
   def repository_empty?
