@@ -125,7 +125,7 @@ class TestRepositoryFactory
       factory = TestRepositoryFactory.new(bundle)
       factory.unbundle
 
-      client = GitClient.new(factory.master_path, factory.repos_path)
+      client = GitClient.new(GitRemoteMasterInfo.new(factory.master_path), factory.repos_path)
       client.ensure_local_clone
       client
     end
@@ -138,7 +138,7 @@ class TestRepositoryFactory
       factory = TestRepositoryFactory.new(bundle)
       factory.unbundle
 
-      client = GitClient.new(factory.master_path, factory.repos_path)
+      client = GitClient.new(GitRemoteMasterInfo.new(factory.master_path), factory.repos_path)
       client.ensure_local_clone
 
       source_browser = GitSourceBrowser.new(client)

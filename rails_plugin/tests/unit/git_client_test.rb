@@ -110,5 +110,17 @@ class GitClientTest < Test::Unit::TestCase
     assert git_client.binary?("lib/foo.jar", nil)
     assert !git_client.binary?("src/foo.java", nil)
   end
+  
+  def test_error_messages_replace_remote_master_path_with_log_safe_path
+    real_remote_master = File.expand_path("tmp/#{ActiveSupport::SecureRandom.hex(32)}")
+    log_safe_remote_master = File.expand_path("tmp/#{ActiveSupport::SecureRandom.hex(32)}")
+    git_client = GitClient.new(GitRemoteMasterInfo.new(real_remote_master, log_safe_remote_master), "tmp/#{ActiveSupport::SecureRandom.hex(32)}")
+    begin
+      git_client.ensure_local_clone
+    rescue StandardError => e
+      assert !e.message.index(real_remote_master)
+      assert e.message.index(log_safe_remote_master)
+    end
+  end
 
 end

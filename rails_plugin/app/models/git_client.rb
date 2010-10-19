@@ -1,7 +1,6 @@
 # Copyright (c) 2010 ThoughtWorks Inc. (http://thoughtworks.com)
 # Licenced under the Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0.txt)
 
-
 require 'time'
 require 'fileutils'
 require 'open3'
@@ -12,11 +11,11 @@ class GitClient
 
   @@logging_enabled = (ENV["ENABLE_GIT_CLIENT_LOGGING"] && ENV["ENABLE_GIT_CLIENT_LOGGING"].downcase == 'true')
   
-  def initialize(master_path, clone_path)
-    @master_path = master_path
+  def initialize(remote_master_info, clone_path)
+    @remote_master_info = remote_master_info
     @clone_path = clone_path
-    if master_path && master_path =~ /\//
-      @clone_path += '/' + master_path.split('/').last.gsub(/.git$/,'') + '.git'
+    if @remote_master_info && @remote_master_info.path && @remote_master_info.path =~ /\//
+      @clone_path += '/' + @remote_master_info.path.split('/').last.gsub(/.git$/,'') + '.git'
     end
     @clone_path = File.expand_path(@clone_path) if @clone_path
     @file_index = GitFileIndex.new(self)
@@ -28,7 +27,7 @@ class GitClient
   end
 
   def ensure_local_clone
-    git("clone --mirror \"#{@master_path}\" \"#{@clone_path}\"") unless File.file?(@clone_path + '/HEAD')
+    git("clone --mirror \"#{@remote_master_info.path}\" \"#{@clone_path}\"") unless File.file?(@clone_path + '/HEAD')
   end
 
   def repository_empty?
@@ -119,8 +118,10 @@ class GitClient
   
   
   def execute(command, &block)
+    sanitized_command = sanitize_logging(command)
+    
     start = Time.now
-    puts "Executing command:\n#{command}" if GitClient.logging_enabled
+    puts "Executing command:\n#{sanitized_command}" if GitClient.logging_enabled
 
     error = nil
     begin
@@ -141,14 +142,16 @@ class GitClient
       end
     end
     
+    sanitized_error = error.map{|e| sanitize_logging(e)}
+
     if error.any?
       puts
       puts "*** warning: the git client exited with an error:"
-      puts error
+      puts sanitized_error
     end
     
     if error.any? { |e| e.strip.start_with?("fatal:") }
-      raise StandardError.new("Could not execute \"#{command}\". The error was:\n#{error}" )
+      raise StandardError.new("Could not execute \"#{sanitized_command}\". The error was:\n#{sanitized_error}" )
     end
   end
   
@@ -202,5 +205,12 @@ class GitClient
     
     tree
   end
+  
+  private
+  
+  def sanitize_logging(text)
+    text.gsub(@remote_master_info.path, @remote_master_info.log_safe_path)
+  end
+  
 end
 

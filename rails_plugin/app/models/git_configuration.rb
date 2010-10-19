@@ -76,7 +76,7 @@ class GitConfiguration < ActiveRecord::Base
   end
   
   def repository    
-    scm_client = GitClient.new(repository_path_with_userinfo, cache_dir)
+    scm_client = GitClient.new(remote_master_info, cache_dir)
     
     source_browser = GitSourceBrowser.new(scm_client)
     
@@ -93,20 +93,33 @@ class GitConfiguration < ActiveRecord::Base
     {:repository_path => self.repository_path, :username => self.username, :password => self.password}
   end
 
-  def repository_path_with_userinfo
+  def remote_master_info
     uri = URI.parse(repository_path)
-    return repository_path if uri.scheme.blank?
 
-    if !username.blank? && !password.blank?
-      "#{uri.scheme}://#{username}:#{password}@#{host_port_path_from(uri)}"
+    if uri.scheme.blank?
+      GitRemoteMasterInfo.new(
+        repository_path
+      )
+    elsif !username.blank? && !password.blank?
+      GitRemoteMasterInfo.new(
+        "#{uri.scheme}://#{username}:#{password}@#{host_port_path_from(uri)}",
+        "#{uri.scheme}://#{username}:*****@#{host_port_path_from(uri)}"
+      )
     elsif !username.blank?
-      "#{uri.scheme}://#{username}@#{host_port_path_from(uri)}"
+      GitRemoteMasterInfo.new(
+        "#{uri.scheme}://#{username}@#{host_port_path_from(uri)}"
+      )
     elsif !uri.user.blank? && password.blank?
-      "#{uri.scheme}://#{uri.user}@#{host_port_path_from(uri)}"
+      GitRemoteMasterInfo.new(
+        "#{uri.scheme}://#{uri.user}@#{host_port_path_from(uri)}"
+      )
     elsif !uri.user.blank? && !password.blank?
-      "#{uri.scheme}://#{uri.user}:#{password}@#{host_port_path_from(uri)}"
+      GitRemoteMasterInfo.new(
+        "#{uri.scheme}://#{uri.user}:#{password}@#{host_port_path_from(uri)}",
+        "#{uri.scheme}://#{uri.user}:*****@#{host_port_path_from(uri)}"
+      )
     else
-      repository_path
+      GitRemoteMasterInfo.new(repository_path)
     end
   end
   
