@@ -95,31 +95,19 @@ class GitConfiguration < ActiveRecord::Base
 
   def remote_master_info
     uri = URI.parse(repository_path)
-
+    
     if uri.scheme.blank?
       GitRemoteMasterInfo.new(
         repository_path
       )
-    elsif !username.blank? && !password.blank?
-      GitRemoteMasterInfo.new(
-        "#{uri.scheme}://#{username}:#{password}@#{host_port_path_from(uri)}",
-        "#{uri.scheme}://#{username}:*****@#{host_port_path_from(uri)}"
-      )
-    elsif !username.blank?
-      GitRemoteMasterInfo.new(
-        "#{uri.scheme}://#{username}@#{host_port_path_from(uri)}"
-      )
-    elsif !uri.user.blank? && password.blank?
-      GitRemoteMasterInfo.new(
-        "#{uri.scheme}://#{uri.user}@#{host_port_path_from(uri)}"
-      )
-    elsif !uri.user.blank? && !password.blank?
-      GitRemoteMasterInfo.new(
-        "#{uri.scheme}://#{uri.user}:#{password}@#{host_port_path_from(uri)}",
-        "#{uri.scheme}://#{uri.user}:*****@#{host_port_path_from(uri)}"
-      )
     else
-      GitRemoteMasterInfo.new(repository_path)
+      
+      remote_user = username.blank? ? uri.user : username
+      
+      GitRemoteMasterInfo.new(
+        "#{uri.scheme}://#{remote_user.to_s}:#{password.to_s}@#{host_port_path_from(uri)}",
+        "#{uri.scheme}://#{remote_user.to_s}:*****@#{host_port_path_from(uri)}"
+      )
     end
   end
   
