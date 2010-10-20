@@ -99,6 +99,15 @@ class GitConfigurationTest < Test::Unit::TestCase
     assert_equal 'http://sammy:*****@git.serpentine.com:80/tutorial/hello', config.remote_master_info.log_safe_path
   end
   
+  def test_remote_master_info_with_should_not_use_any_credentials_on_git_protocol
+    config = GitConfiguration.new(:repository_path => 'git://git.serpentine.com:1234/tutorial/hello.git')
+    config.project = Project.new
+    config.username = 'sammy'
+    config.password = 'soso'
+    assert_equal 'git://git.serpentine.com:1234/tutorial/hello.git', config.remote_master_info.path
+    assert_equal 'git://git.serpentine.com:1234/tutorial/hello.git', config.remote_master_info.log_safe_path
+  end
+  
   def test_remote_master_info_with_userinfo_when_username_supplied_as_attribute_and_no_userinfo_in_path
     config = GitConfiguration.new(:repository_path => 'http://git.serpentine.com/tutorial/hello')
     config.project = Project.new

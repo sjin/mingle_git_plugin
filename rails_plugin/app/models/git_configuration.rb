@@ -104,10 +104,15 @@ class GitConfiguration < ActiveRecord::Base
       
       remote_user = username.blank? ? uri.user : username
       
-      GitRemoteMasterInfo.new(
-        "#{uri.scheme}://#{remote_user.to_s}:#{password.to_s}@#{host_port_path_from(uri)}",
-        "#{uri.scheme}://#{remote_user.to_s}:*****@#{host_port_path_from(uri)}"
-      )
+      path = "#{uri.scheme}://#{remote_user.to_s}:#{password.to_s}@#{host_port_path_from(uri)}"
+      log_safe_path = "#{uri.scheme}://#{remote_user.to_s}:*****@#{host_port_path_from(uri)}"
+
+      if uri.scheme == 'git'
+        path = "#{uri.scheme}://#{host_port_path_from(uri)}"
+        log_safe_path = path
+      end
+      
+      GitRemoteMasterInfo.new(path, log_safe_path)
     end
   end
   
