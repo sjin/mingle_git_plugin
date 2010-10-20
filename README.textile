@@ -21,14 +21,10 @@ h2. Installation
 
 $ git clone git://github.com/ThoughtWorksStudios/mingle_git_plugin.git
 
-* Copy the mingle_git_plugin/rails_plugin directory to MINGLE_ROOT/vendor/plugins/mingle_git_plugin.
-
-  where MINGLE_ROOT is the location where Mingle 3.2 is installed. 
-
-    * On Windows, this is the location that the installer installed Mingle at
-    * On OSX, this will be within the app bundle, at <mingle_application_bundle>/Contents/Resources/app
-    * On *NIX, this is the expanded archive
-* Restart the mingle server
+* Go to the rails_plugin directory inside the mingle_git_plugin directory.
+* Run this command: rake deploy MINGLE_ROOT=path_to_mingle_root_directory.
+* It will install the plugin into the vendor/plugins directory of your Mingle install directory.
+* Restart the mingle server.
 
 h2. License
 
