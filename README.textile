@@ -9,6 +9,7 @@ h2. Features
 * Changeset diff viewer
 * Branches
 
+
 h2. Requirements
 
 This plugin has been tested with and known to work with Mingle version 3.2, and git version 1.7.0 and above.
